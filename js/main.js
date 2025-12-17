@@ -265,10 +265,6 @@ class UnderwaterExploration {
                 event.preventDefault();
                 this.cameraController.rotateRight();
                 break;
-            case 'KeyE':
-                // Interact with chest if nearby
-                this.attemptChestInteraction();
-                break;
         }
     }
 
@@ -287,9 +283,6 @@ class UnderwaterExploration {
                 break;
             case 'palm_right':
                 this.cameraController.rotateLeft(gesture.confidence);
-                break;
-            case 'pinch_right':
-                this.attemptChestInteraction();
                 break;
         }
     }
@@ -401,9 +394,12 @@ class UnderwaterExploration {
             // Update proximity visual feedback
             this.treasureChest.updateProximity(distance);
 
-            // Show interaction prompt when in range
-            if (distance < 8) {
-                this.showInteractionPrompt('Pinch gesture (thumb + middle finger) or press E to open chest!', 100);
+            // Automatically open chest when player gets close enough
+            if (distance < 5) {
+                this.openTreasureChest();
+            } else if (distance < 8) {
+                // Show hint when in outer range
+                this.showInteractionPrompt('Get closer to discover the treasure!', 100);
             }
         }
     }
