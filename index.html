@@ -3,44 +3,95 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Underwater Experience</title>
+    <title>Underwater Exploration - Interactive 3D Experience</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="underwater-container">
-        <!-- Canvas for rendering underwater scene -->
-        <canvas id="underwaterCanvas"></canvas>
+    <!-- Main container -->
+    <div id="app">
+        <!-- Three.js render target -->
+        <div id="canvas-container"></div>
 
-        <!-- Light rays overlay -->
-        <div id="lightRays"></div>
+        <!-- Webcam video (hidden, used for gesture tracking) -->
+        <video id="webcam" autoplay playsinline></video>
 
-        <!-- UI Controls -->
-        <div id="controls">
-            <button id="toggleSound" class="control-btn">🔊 Sound</button>
-            <button id="toggleFullscreen" class="control-btn">⛶ Fullscreen</button>
-            <button id="addFish" class="control-btn">🐟 Add Fish</button>
-            <div id="fishCounter">Fish: <span id="fishCount">20</span></div>
+        <!-- Mini-map viewport -->
+        <div id="minimap-container">
+            <canvas id="minimap"></canvas>
+            <div class="minimap-label">MAP</div>
         </div>
 
-        <!-- Welcome overlay -->
-        <div id="welcome">
-            <h1>🌊 Interactive Underwater Experience</h1>
-            <p>Click anywhere to dive in...</p>
-            <ul>
-                <li>Move your mouse to attract fish</li>
-                <li>Click to create ripples and bubbles</li>
-                <li>Press SPACE to add more fish</li>
-                <li>Press F to toggle fullscreen</li>
-            </ul>
-            <button id="startBtn">Enter the Ocean</button>
+        <!-- UI Overlay -->
+        <div id="ui-overlay">
+            <!-- Top left info -->
+            <div id="info-panel">
+                <div class="info-item">
+                    <span class="label">Gesture Status:</span>
+                    <span id="gesture-status" class="value">Initializing...</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Camera:</span>
+                    <span id="camera-status" class="value">Ready</span>
+                </div>
+            </div>
+
+            <!-- Controls help -->
+            <div id="controls-help">
+                <h3>Controls</h3>
+                <ul>
+                    <li><kbd>Space</kbd> Swim forward</li>
+                    <li><kbd>←/→</kbd> Rotate camera</li>
+                    <li><strong>Left palm</strong> → Turn left</li>
+                    <li><strong>Right palm</strong> → Turn right</li>
+                    <li><strong>Right fist</strong> → Open chest</li>
+                </ul>
+                <button id="toggle-help" class="btn-sm">Hide Help</button>
+            </div>
+
+            <!-- Interaction prompts -->
+            <div id="interaction-prompt"></div>
+
+            <!-- Treasure found message -->
+            <div id="treasure-message" class="hidden">
+                <h1>🧸 I found my teddy bear!</h1>
+            </div>
+        </div>
+
+        <!-- Loading screen -->
+        <div id="loading-screen">
+            <div class="loading-content">
+                <h1>🌊 Underwater Exploration</h1>
+                <p>Loading environment...</p>
+                <div class="loading-bar">
+                    <div id="loading-progress"></div>
+                </div>
+                <div id="loading-status">Initializing...</div>
+                <button id="start-btn" class="hidden">Enter the Ocean</button>
+                <p class="webcam-note">This experience uses your webcam for gesture control. You'll be prompted to allow access.</p>
+            </div>
+        </div>
+
+        <!-- Settings panel -->
+        <div id="settings-panel">
+            <button id="toggle-gestures" class="control-btn">
+                <span id="gesture-icon">👋</span> Gestures: <span id="gesture-toggle-text">ON</span>
+            </button>
+            <button id="toggle-minimap" class="control-btn">
+                🗺️ Mini-map: <span id="minimap-toggle-text">ON</span>
+            </button>
+            <button id="toggle-fullscreen" class="control-btn">⛶ Fullscreen</button>
         </div>
     </div>
 
-    <!-- Audio elements -->
-    <audio id="ambientSound" loop>
-        <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" type="audio/wav">
-    </audio>
+    <!-- Three.js -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 
-    <script src="script.js"></script>
+    <!-- MediaPipe Hands for gesture recognition -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <!-- Application modules -->
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>

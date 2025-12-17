@@ -1,3 +1,7 @@
+/* ==============================================
+   Underwater Exploration - Main Stylesheet
+   ============================================== */
+
 * {
     margin: 0;
     padding: 0;
@@ -5,242 +9,497 @@
 }
 
 body {
-    overflow: hidden;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(to bottom, #001a33 0%, #003d5c 50%, #00668c 100%);
+    overflow: hidden;
+    background: #001a33;
+    color: #e0f7ff;
 }
 
-#underwater-container {
+/* ==============================================
+   Main Container
+   ============================================== */
+
+#app {
     position: relative;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background: radial-gradient(ellipse at center top, #0a4d68 0%, #001a33 100%);
 }
 
-#underwaterCanvas {
+#canvas-container {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    cursor: crosshair;
 }
 
-/* Animated light rays */
-#lightRays {
+/* ==============================================
+   Webcam (hidden but used for tracking)
+   ============================================== */
+
+#webcam {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ==============================================
+   Mini-map
+   ============================================== */
+
+#minimap-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 200px;
+    height: 200px;
+    background: rgba(0, 20, 40, 0.9);
+    border: 2px solid rgba(100, 200, 255, 0.5);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+    transition: opacity 0.3s ease;
+}
+
+#minimap-container.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#minimap {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.minimap-label {
+    position: absolute;
+    bottom: 5px;
+    right: 8px;
+    font-size: 10px;
+    font-weight: bold;
+    color: rgba(100, 200, 255, 0.7);
+    letter-spacing: 1px;
+}
+
+/* ==============================================
+   UI Overlay
+   ============================================== */
+
+#ui-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     pointer-events: none;
-    background:
-        linear-gradient(135deg, transparent 0%, rgba(100, 200, 255, 0.1) 20%, transparent 40%),
-        linear-gradient(225deg, transparent 0%, rgba(100, 200, 255, 0.15) 30%, transparent 50%),
-        linear-gradient(180deg, transparent 0%, rgba(100, 200, 255, 0.08) 25%, transparent 60%);
-    background-size: 200% 200%, 300% 300%, 250% 250%;
-    animation: lightRayAnimation 15s ease-in-out infinite;
-    opacity: 0.6;
+    z-index: 50;
 }
 
-@keyframes lightRayAnimation {
-    0%, 100% {
-        background-position: 0% 0%, 100% 0%, 50% 0%;
-        opacity: 0.4;
-    }
-    50% {
-        background-position: 100% 100%, 0% 100%, 80% 50%;
-        opacity: 0.7;
-    }
+#ui-overlay > * {
+    pointer-events: auto;
 }
 
-/* Controls */
-#controls {
+/* Info Panel (top left) */
+#info-panel {
     position: absolute;
     top: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    flex-direction: column;
-    z-index: 100;
-}
-
-.control-btn {
-    background: rgba(0, 50, 80, 0.8);
-    border: 2px solid rgba(100, 200, 255, 0.5);
-    color: #fff;
-    padding: 10px 15px;
+    left: 20px;
+    background: rgba(0, 20, 40, 0.85);
+    border: 2px solid rgba(100, 200, 255, 0.4);
     border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s ease;
+    padding: 15px;
     backdrop-filter: blur(10px);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
-.control-btn:hover {
-    background: rgba(0, 80, 120, 0.9);
-    border-color: rgba(100, 200, 255, 0.8);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(100, 200, 255, 0.3);
+.info-item {
+    margin-bottom: 8px;
+    font-size: 13px;
 }
 
-.control-btn:active {
-    transform: translateY(0);
+.info-item:last-child {
+    margin-bottom: 0;
 }
 
-#fishCounter {
-    background: rgba(0, 50, 80, 0.8);
-    border: 2px solid rgba(100, 200, 255, 0.5);
+.info-item .label {
+    color: rgba(100, 200, 255, 0.8);
+    margin-right: 5px;
+}
+
+.info-item .value {
     color: #fff;
-    padding: 10px 15px;
-    border-radius: 8px;
-    font-size: 14px;
-    backdrop-filter: blur(10px);
-    text-align: center;
+    font-weight: 600;
 }
 
-#fishCount {
-    font-weight: bold;
+/* Controls Help */
+#controls-help {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(0, 20, 40, 0.9);
+    border: 2px solid rgba(100, 200, 255, 0.4);
+    border-radius: 8px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    max-width: 300px;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#controls-help.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+}
+
+#controls-help h3 {
+    margin-bottom: 12px;
+    color: #64c8ff;
+    font-size: 16px;
+}
+
+#controls-help ul {
+    list-style: none;
+    margin-bottom: 15px;
+}
+
+#controls-help li {
+    margin: 8px 0;
+    font-size: 13px;
+    color: #a0d8f0;
+}
+
+#controls-help kbd {
+    background: rgba(100, 200, 255, 0.2);
+    border: 1px solid rgba(100, 200, 255, 0.4);
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-family: monospace;
+    font-size: 11px;
+    color: #fff;
+    margin-right: 8px;
+}
+
+#controls-help strong {
     color: #64c8ff;
 }
 
-/* Welcome screen */
-#welcome {
+/* Interaction Prompt (center) */
+#interaction-prompt {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 40, 80, 0.95);
+    border: 2px solid rgba(100, 200, 255, 0.6);
+    border-radius: 12px;
+    padding: 20px 40px;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    text-align: center;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 8px 30px rgba(100, 200, 255, 0.3);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+#interaction-prompt.visible {
+    opacity: 1;
+}
+
+/* Treasure Found Message */
+#treasure-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 50, 100, 0.95);
+    border: 3px solid #64c8ff;
+    border-radius: 20px;
+    padding: 40px 60px;
+    text-align: center;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 10px 50px rgba(100, 200, 255, 0.5);
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+}
+
+#treasure-message:not(.hidden) {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+#treasure-message h1 {
+    font-size: 48px;
+    color: #fff;
+    text-shadow: 0 0 20px rgba(100, 200, 255, 0.8);
+    animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+    0%, 100% {
+        text-shadow: 0 0 20px rgba(100, 200, 255, 0.8);
+    }
+    50% {
+        text-shadow: 0 0 40px rgba(100, 200, 255, 1);
+    }
+}
+
+/* ==============================================
+   Loading Screen
+   ============================================== */
+
+#loading-screen {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 20, 40, 0.95);
+    background: linear-gradient(to bottom, #001a33 0%, #003d5c 50%, #001a33 100%);
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    backdrop-filter: blur(15px);
-    animation: fadeIn 1s ease-in;
+    transition: opacity 0.5s ease;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+#loading-screen.hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
-#welcome h1 {
+.loading-content {
+    text-align: center;
+    max-width: 500px;
+    padding: 40px;
+}
+
+.loading-content h1 {
+    font-size: 48px;
     color: #64c8ff;
-    font-size: 3em;
     margin-bottom: 20px;
     text-shadow: 0 0 20px rgba(100, 200, 255, 0.5);
     animation: float 3s ease-in-out infinite;
 }
 
 @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
 }
 
-#welcome p {
+.loading-content p {
+    font-size: 18px;
     color: #a0d8f0;
-    font-size: 1.3em;
     margin-bottom: 30px;
 }
 
-#welcome ul {
-    list-style: none;
-    color: #a0d8f0;
-    font-size: 1.1em;
-    margin-bottom: 40px;
-    text-align: left;
+.loading-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(100, 200, 255, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 15px;
 }
 
-#welcome ul li {
-    margin: 10px 0;
-    padding-left: 30px;
-    position: relative;
+#loading-progress {
+    height: 100%;
+    background: linear-gradient(90deg, #0077be, #64c8ff);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(100, 200, 255, 0.5);
 }
 
-#welcome ul li::before {
-    content: "🐠";
+#loading-status {
+    font-size: 14px;
+    color: rgba(160, 216, 240, 0.8);
+    margin-bottom: 20px;
+    min-height: 20px;
+}
+
+.webcam-note {
+    font-size: 12px !important;
+    color: rgba(160, 216, 240, 0.6) !important;
+    margin-top: 30px !important;
+    font-style: italic;
+}
+
+/* ==============================================
+   Settings Panel
+   ============================================== */
+
+#settings-panel {
     position: absolute;
-    left: 0;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 100;
 }
 
-#startBtn {
+/* ==============================================
+   Buttons
+   ============================================== */
+
+.control-btn, .btn-sm, #start-btn {
+    background: rgba(0, 50, 80, 0.9);
+    border: 2px solid rgba(100, 200, 255, 0.5);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.control-btn:hover, .btn-sm:hover, #start-btn:hover {
+    background: rgba(0, 80, 120, 0.95);
+    border-color: rgba(100, 200, 255, 0.8);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(100, 200, 255, 0.4);
+}
+
+.control-btn:active, .btn-sm:active, #start-btn:active {
+    transform: translateY(0);
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 12px;
+}
+
+#start-btn {
+    padding: 16px 40px;
+    font-size: 18px;
     background: linear-gradient(135deg, #0077be 0%, #00a8e8 100%);
     border: none;
-    color: white;
-    padding: 20px 50px;
-    font-size: 1.3em;
     border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 10px 30px rgba(0, 120, 190, 0.4);
     text-transform: uppercase;
     letter-spacing: 2px;
-    font-weight: bold;
+    box-shadow: 0 8px 25px rgba(0, 120, 190, 0.4);
 }
 
-#startBtn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 15px 40px rgba(0, 120, 190, 0.6);
+#start-btn:hover {
     background: linear-gradient(135deg, #0088cf 0%, #00b9ff 100%);
+    box-shadow: 0 12px 35px rgba(0, 120, 190, 0.6);
 }
 
-#startBtn:active {
-    transform: translateY(-1px);
+.hidden {
+    display: none !important;
 }
 
-/* Hide welcome when started */
-.started #welcome {
-    animation: fadeOut 0.5s ease-out forwards;
-}
+/* ==============================================
+   Responsive Design
+   ============================================== */
 
-@keyframes fadeOut {
-    to {
-        opacity: 0;
-        pointer-events: none;
-    }
-}
-
-/* Responsive design */
 @media (max-width: 768px) {
-    #welcome h1 {
-        font-size: 2em;
-    }
-
-    #welcome p {
-        font-size: 1em;
-    }
-
-    #welcome ul {
-        font-size: 0.9em;
-    }
-
-    #controls {
+    #minimap-container {
+        width: 150px;
+        height: 150px;
         top: 10px;
         right: 10px;
     }
 
+    #info-panel {
+        top: 10px;
+        left: 10px;
+        padding: 12px;
+        font-size: 11px;
+    }
+
+    #controls-help {
+        bottom: 10px;
+        left: 10px;
+        padding: 15px;
+        max-width: 250px;
+    }
+
+    #controls-help h3 {
+        font-size: 14px;
+    }
+
+    #controls-help li {
+        font-size: 11px;
+    }
+
+    #settings-panel {
+        bottom: 10px;
+        right: 10px;
+    }
+
     .control-btn {
-        padding: 8px 12px;
+        padding: 10px 16px;
         font-size: 12px;
+    }
+
+    #treasure-message h1 {
+        font-size: 32px;
+        padding: 30px 40px;
+    }
+
+    .loading-content h1 {
+        font-size: 36px;
     }
 }
 
-/* Fullscreen styling */
-:-webkit-full-screen #underwater-container {
+/* ==============================================
+   Fullscreen Styles
+   ============================================== */
+
+:-webkit-full-screen #app,
+:-moz-full-screen #app,
+:fullscreen #app {
     width: 100vw;
     height: 100vh;
 }
 
-:-moz-full-screen #underwater-container {
-    width: 100vw;
-    height: 100vh;
+/* ==============================================
+   Accessibility
+   ============================================== */
+
+button:focus {
+    outline: 2px solid #64c8ff;
+    outline-offset: 2px;
 }
 
-:fullscreen #underwater-container {
-    width: 100vw;
-    height: 100vh;
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+    .control-btn, .btn-sm, #start-btn {
+        border-width: 3px;
+    }
+
+    #minimap-container,
+    #info-panel,
+    #controls-help {
+        border-width: 3px;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
