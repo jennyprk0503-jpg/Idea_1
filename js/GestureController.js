@@ -204,6 +204,16 @@ export class GestureController {
      * @returns {Object|null} - Gesture object or null
      */
     recognizeGesture(landmarks, handedness) {
+        // Check for pinch gesture first (higher priority)
+        const isPinching = this.isPinching(landmarks);
+        if (isPinching && handedness === 'Right') {
+            return {
+                type: 'pinch_right',
+                hand: handedness,
+                confidence: 0.9
+            };
+        }
+
         // Calculate if hand is open (palm) or closed (fist)
         const isOpen = this.isHandOpen(landmarks);
         const isFacing = this.isPalmFacingCamera(landmarks);
@@ -215,15 +225,6 @@ export class GestureController {
         if (isOpen && isFacing) {
             return {
                 type: handedness === 'Left' ? 'palm_left' : 'palm_right',
-                hand: handedness,
-                confidence: confidence
-            };
-        }
-
-        // Fist gesture (hand closed) - only right hand for interaction
-        if (!isOpen && handedness === 'Right') {
-            return {
-                type: 'fist_right',
                 hand: handedness,
                 confidence: confidence
             };
@@ -274,6 +275,23 @@ export class GestureController {
 
         // If z-coordinate is close to 0, palm is facing camera
         return Math.abs(palmZ) < 0.1;
+    }
+
+    /**
+     * Detect pinching gesture (thumb and middle finger touching)
+     * Landmark indices: thumb tip = 4, middle finger tip = 12
+     */
+    isPinching(landmarks) {
+        const thumbTip = landmarks[4];
+        const middleFingerTip = landmarks[12];
+
+        // Calculate 3D distance between thumb and middle finger tips
+        const distance = this.distance3D(thumbTip, middleFingerTip);
+
+        // Pinch threshold - fingers are considered pinching if very close
+        const pinchThreshold = 0.05; // Adjust this value for sensitivity
+
+        return distance < pinchThreshold;
     }
 
     /**

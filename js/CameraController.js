@@ -56,7 +56,7 @@ export class CameraController {
      */
     rotateLeft(intensity = 1.0) {
         this.targetRotation = this.rotateSpeed * intensity;
-        this.rotationVelocity += this.targetRotation * 0.2; // 2x faster for gestures
+        this.rotationVelocity += this.targetRotation * 0.35; // Much faster rotation
     }
 
     /**
@@ -65,7 +65,7 @@ export class CameraController {
      */
     rotateRight(intensity = 1.0) {
         this.targetRotation = -this.rotateSpeed * intensity;
-        this.rotationVelocity += this.targetRotation * 0.2; // 2x faster for gestures
+        this.rotationVelocity += this.targetRotation * 0.35; // Much faster rotation
     }
 
     /**

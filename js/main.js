@@ -288,7 +288,7 @@ class UnderwaterExploration {
             case 'palm_right':
                 this.cameraController.rotateLeft(gesture.confidence);
                 break;
-            case 'fist_right':
+            case 'pinch_right':
                 this.attemptChestInteraction();
                 break;
         }
@@ -403,7 +403,7 @@ class UnderwaterExploration {
 
             // Show interaction prompt when in range
             if (distance < 8) {
-                this.showInteractionPrompt('Right fist gesture or press E to open chest!', 100);
+                this.showInteractionPrompt('Pinch gesture (thumb + middle finger) or press E to open chest!', 100);
             }
         }
     }
