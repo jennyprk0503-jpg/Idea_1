@@ -33,6 +33,7 @@ export class Environment {
         this.createEnhancedParticles();
         this.createDramaticGodRays();
         this.createLightOrbs();
+        this.createFurniture(); // Add furniture for submerged room aesthetic
     }
 
     /**
@@ -54,13 +55,15 @@ export class Environment {
             emissiveIntensity: 0.2
         });
 
-        // Enhanced floor with more detail
+        // Enhanced floor with more detail and reflectivity
         const floorGeometry = new THREE.PlaneGeometry(size, size, 30, 30);
-        const floorMaterial = new THREE.MeshPhongMaterial({
-            color: 0x0a3d58,
-            shininess: 60,
-            emissive: 0x051d28,
-            emissiveIntensity: 0.3
+        const floorMaterial = new THREE.MeshStandardMaterial({
+            color: 0x2a5d78,
+            metalness: 0.3,
+            roughness: 0.4,
+            envMapIntensity: 1.0,
+            emissive: 0x0a2d48,
+            emissiveIntensity: 0.2
         });
 
         // Add more variation to floor vertices
@@ -111,34 +114,35 @@ export class Environment {
      * Creates enhanced lighting system with vibrant colors
      */
     createLighting() {
-        // Brighter ambient underwater lighting with color
-        this.lights.ambient = new THREE.AmbientLight(0x5599cc, 0.7); // Increased intensity
+        // Much brighter ambient underwater lighting
+        this.lights.ambient = new THREE.AmbientLight(0x88bbee, 1.2); // Significantly increased
         this.scene.add(this.lights.ambient);
 
-        // Main sun light with warmer color
-        this.lights.sun = new THREE.DirectionalLight(0xaaddff, 2.5); // Much brighter!
+        // Main sun light with brighter, more natural color
+        this.lights.sun = new THREE.DirectionalLight(0xffffff, 3.5); // Much brighter white light
         this.lights.sun.position.set(0, 20, 0);
         this.lights.sun.castShadow = true;
 
-        // Enhanced shadow configuration
-        this.lights.sun.shadow.mapSize.width = 2048;
-        this.lights.sun.shadow.mapSize.height = 2048;
+        // Enhanced shadow configuration for better quality
+        this.lights.sun.shadow.mapSize.width = 4096; // Higher resolution shadows
+        this.lights.sun.shadow.mapSize.height = 4096;
         this.lights.sun.shadow.camera.near = 0.5;
         this.lights.sun.shadow.camera.far = 50;
-        this.lights.sun.shadow.camera.left = -25;
-        this.lights.sun.shadow.camera.right = 25;
-        this.lights.sun.shadow.camera.top = 25;
-        this.lights.sun.shadow.camera.bottom = -25;
+        this.lights.sun.shadow.camera.left = -30;
+        this.lights.sun.shadow.camera.right = 30;
+        this.lights.sun.shadow.camera.top = 30;
+        this.lights.sun.shadow.camera.bottom = -30;
+        this.lights.sun.shadow.bias = -0.0001; // Reduce shadow acne
 
         this.scene.add(this.lights.sun);
 
-        // Multiple colored point lights for whimsical atmosphere
+        // Multiple colored point lights for whimsical atmosphere - increased brightness
         const pointLightConfigs = [
-            { color: 0x66ddff, intensity: 1.2, position: [10, 12, 10] },
-            { color: 0x88ffaa, intensity: 1.0, position: [-10, 10, -10] },
-            { color: 0xffaa88, intensity: 0.8, position: [15, 8, -15] },
-            { color: 0xaa88ff, intensity: 0.9, position: [-15, 14, 15] },
-            { color: 0xffdd66, intensity: 0.7, position: [0, 15, 0] }
+            { color: 0x66ddff, intensity: 2.0, position: [10, 12, 10] },
+            { color: 0x88ffaa, intensity: 1.8, position: [-10, 10, -10] },
+            { color: 0xffaa88, intensity: 1.5, position: [15, 8, -15] },
+            { color: 0xaa88ff, intensity: 1.6, position: [-15, 14, 15] },
+            { color: 0xffdd66, intensity: 1.4, position: [0, 15, 0] }
         ];
 
         pointLightConfigs.forEach(config => {
@@ -148,12 +152,12 @@ export class Environment {
             this.lights.volumetric.push(light);
         });
 
-        // Additional overhead spotlights for dramatic effect
+        // Additional overhead spotlights for dramatic effect - much brighter
         const spotlightConfigs = [
-            { color: 0xaaddff, intensity: 2.0, position: [8, 18, 8], angle: Math.PI / 6 },
-            { color: 0x88ccff, intensity: 1.8, position: [-8, 18, -8], angle: Math.PI / 5 },
-            { color: 0x99ddff, intensity: 1.5, position: [12, 18, -10], angle: Math.PI / 5.5 },
-            { color: 0xbbddff, intensity: 1.6, position: [-10, 18, 12], angle: Math.PI / 5.5 }
+            { color: 0xffffff, intensity: 4.5, position: [8, 18, 8], angle: Math.PI / 5 },
+            { color: 0xeeffff, intensity: 4.0, position: [-8, 18, -8], angle: Math.PI / 5 },
+            { color: 0xffffff, intensity: 3.8, position: [12, 18, -10], angle: Math.PI / 5.5 },
+            { color: 0xf0ffff, intensity: 4.2, position: [-10, 18, 12], angle: Math.PI / 5.5 }
         ];
 
         this.overheadSpotlights = [];
@@ -384,6 +388,206 @@ export class Environment {
             this.scene.add(orb);
             this.lightOrbs.push(orb);
         }
+    }
+
+    /**
+     * Creates furniture to make it look like a submerged room
+     */
+    createFurniture() {
+        this.furniture = [];
+
+        // Shared material for wooden furniture
+        const woodMaterial = new THREE.MeshStandardMaterial({
+            color: 0x5a3a1a,
+            roughness: 0.8,
+            metalness: 0.1
+        });
+
+        const fabricMaterial = new THREE.MeshStandardMaterial({
+            color: 0x4a5f7a,
+            roughness: 0.9,
+            metalness: 0.0
+        });
+
+        // Create Couch
+        const couch = this.createCouch(woodMaterial, fabricMaterial);
+        couch.position.set(-15, 0, -15);
+        couch.rotation.y = Math.PI / 4;
+        this.scene.add(couch);
+        this.furniture.push(couch);
+
+        // Create Desk
+        const desk = this.createDesk(woodMaterial);
+        desk.position.set(15, 0, -10);
+        desk.rotation.y = -Math.PI / 6;
+        this.scene.add(desk);
+        this.furniture.push(desk);
+
+        // Create Drawer/Dresser
+        const drawer = this.createDrawer(woodMaterial);
+        drawer.position.set(-12, 0, 15);
+        drawer.rotation.y = Math.PI / 3;
+        this.scene.add(drawer);
+        this.furniture.push(drawer);
+    }
+
+    /**
+     * Create a couch mesh
+     */
+    createCouch(woodMaterial, fabricMaterial) {
+        const couchGroup = new THREE.Group();
+
+        // Couch base/seat
+        const seatGeometry = new THREE.BoxGeometry(4, 0.8, 2);
+        const seat = new THREE.Mesh(seatGeometry, fabricMaterial);
+        seat.position.y = 1;
+        seat.castShadow = true;
+        seat.receiveShadow = true;
+        couchGroup.add(seat);
+
+        // Couch back
+        const backGeometry = new THREE.BoxGeometry(4, 1.5, 0.3);
+        const back = new THREE.Mesh(backGeometry, fabricMaterial);
+        back.position.set(0, 1.75, -0.85);
+        back.castShadow = true;
+        couchGroup.add(back);
+
+        // Armrests
+        const armGeometry = new THREE.BoxGeometry(0.4, 1, 2);
+        const leftArm = new THREE.Mesh(armGeometry, fabricMaterial);
+        leftArm.position.set(-1.8, 1.25, 0);
+        leftArm.castShadow = true;
+        couchGroup.add(leftArm);
+
+        const rightArm = leftArm.clone();
+        rightArm.position.set(1.8, 1.25, 0);
+        couchGroup.add(rightArm);
+
+        // Legs
+        const legGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.8);
+        const legPositions = [
+            [-1.5, 0.4, 0.8],
+            [1.5, 0.4, 0.8],
+            [-1.5, 0.4, -0.8],
+            [1.5, 0.4, -0.8]
+        ];
+
+        legPositions.forEach(pos => {
+            const leg = new THREE.Mesh(legGeometry, woodMaterial);
+            leg.position.set(...pos);
+            leg.castShadow = true;
+            couchGroup.add(leg);
+        });
+
+        return couchGroup;
+    }
+
+    /**
+     * Create a desk mesh
+     */
+    createDesk(woodMaterial) {
+        const deskGroup = new THREE.Group();
+
+        // Desktop
+        const topGeometry = new THREE.BoxGeometry(3, 0.15, 1.5);
+        const top = new THREE.Mesh(topGeometry, woodMaterial);
+        top.position.y = 1.8;
+        top.castShadow = true;
+        top.receiveShadow = true;
+        deskGroup.add(top);
+
+        // Legs
+        const legGeometry = new THREE.BoxGeometry(0.15, 1.8, 0.15);
+        const legPositions = [
+            [-1.3, 0.9, 0.65],
+            [1.3, 0.9, 0.65],
+            [-1.3, 0.9, -0.65],
+            [1.3, 0.9, -0.65]
+        ];
+
+        legPositions.forEach(pos => {
+            const leg = new THREE.Mesh(legGeometry, woodMaterial);
+            leg.position.set(...pos);
+            leg.castShadow = true;
+            deskGroup.add(leg);
+        });
+
+        // Drawer
+        const drawerGeometry = new THREE.BoxGeometry(2.5, 0.4, 1.2);
+        const drawerMesh = new THREE.Mesh(drawerGeometry, woodMaterial);
+        drawerMesh.position.set(0, 1.3, 0);
+        drawerMesh.castShadow = true;
+        deskGroup.add(drawerMesh);
+
+        // Drawer handle
+        const handleGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.3);
+        const handleMaterial = new THREE.MeshStandardMaterial({
+            color: 0x888888,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+        const handle = new THREE.Mesh(handleGeometry, handleMaterial);
+        handle.rotation.z = Math.PI / 2;
+        handle.position.set(0, 1.3, 0.65);
+        deskGroup.add(handle);
+
+        return deskGroup;
+    }
+
+    /**
+     * Create a drawer/dresser mesh
+     */
+    createDrawer(woodMaterial) {
+        const drawerGroup = new THREE.Group();
+
+        // Main body
+        const bodyGeometry = new THREE.BoxGeometry(2, 2.5, 1.2);
+        const body = new THREE.Mesh(bodyGeometry, woodMaterial);
+        body.position.y = 1.25;
+        body.castShadow = true;
+        body.receiveShadow = true;
+        drawerGroup.add(body);
+
+        // Individual drawers (visual detail)
+        const drawerFrontGeometry = new THREE.BoxGeometry(1.8, 0.5, 0.05);
+        const drawerPositions = [0.6, 1.25, 1.9];
+
+        const handleMaterial = new THREE.MeshStandardMaterial({
+            color: 0x888888,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+
+        drawerPositions.forEach(y => {
+            const drawerFront = new THREE.Mesh(drawerFrontGeometry, woodMaterial);
+            drawerFront.position.set(0, y, 0.625);
+            drawerGroup.add(drawerFront);
+
+            // Drawer handles
+            const handleGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.25);
+            const handle = new THREE.Mesh(handleGeometry, handleMaterial);
+            handle.rotation.z = Math.PI / 2;
+            handle.position.set(0, y, 0.68);
+            drawerGroup.add(handle);
+        });
+
+        // Legs
+        const legGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.3);
+        const legPositions = [
+            [-0.8, 0.15, 0.5],
+            [0.8, 0.15, 0.5],
+            [-0.8, 0.15, -0.5],
+            [0.8, 0.15, -0.5]
+        ];
+
+        legPositions.forEach(pos => {
+            const leg = new THREE.Mesh(legGeometry, woodMaterial);
+            leg.position.set(...pos);
+            leg.castShadow = true;
+            drawerGroup.add(leg);
+        });
+
+        return drawerGroup;
     }
 
     /**

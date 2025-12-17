@@ -90,11 +90,14 @@ class UnderwaterExploration {
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap; // High quality soft shadows
 
         // Enhanced tone mapping for more vibrant colors
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 1.5; // Increased for brighter, more whimsical look
+        this.renderer.toneMappingExposure = 2.2; // Much brighter for underwater visibility
+
+        // Enable physically correct lighting
+        this.renderer.physicallyCorrectLights = true;
 
         // Color management
         this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -156,7 +159,7 @@ class UnderwaterExploration {
         this.updateLoadingStatus('Spawning fish...', 50);
 
         // Create fish school with more fish for fuller scene
-        this.fishSchool = new FishSchool(this.scene, 20); // Increased from 15
+        this.fishSchool = new FishSchool(this.scene, 40); // Doubled to 40 for more vibrant underwater life
 
         this.updateLoadingStatus('Hiding treasure...', 60);
 

@@ -104,7 +104,7 @@ export class TreasureChest {
         group.add(glow);
         this.glow = glow;
 
-        // Add proximity ring indicator
+        // Add proximity ring indicator (dynamic)
         const ringGeometry = new THREE.TorusGeometry(2.5, 0.15, 8, 32);
         const ringMaterial = new THREE.MeshBasicMaterial({
             color: 0xffd700,
@@ -117,6 +117,21 @@ export class TreasureChest {
         ring.rotation.x = Math.PI / 2;
         group.add(ring);
         this.proximityRing = ring;
+
+        // Add permanent interaction range indicator ring
+        const rangeRingGeometry = new THREE.TorusGeometry(8, 0.1, 8, 32);
+        const rangeRingMaterial = new THREE.MeshBasicMaterial({
+            color: 0x66ddff,
+            transparent: true,
+            opacity: 0.25,
+            blending: THREE.AdditiveBlending,
+            side: THREE.DoubleSide
+        });
+        const rangeRing = new THREE.Mesh(rangeRingGeometry, rangeRingMaterial);
+        rangeRing.position.y = 0.05;
+        rangeRing.rotation.x = Math.PI / 2;
+        group.add(rangeRing);
+        this.interactionRangeRing = rangeRing;
 
         this.scene.add(group);
         this.chest = group;
@@ -232,9 +247,12 @@ export class TreasureChest {
         // Make bear visible
         this.bear.visible = true;
 
-        // Hide glow effect
+        // Hide glow effect and interaction ring
         if (this.glow) {
             this.glow.visible = false;
+        }
+        if (this.interactionRangeRing) {
+            this.interactionRangeRing.visible = false;
         }
     }
 
@@ -316,6 +334,14 @@ export class TreasureChest {
         // Animate proximity ring rotation
         if (!this.isOpen && this.proximityRing && this.proximityRing.visible) {
             this.proximityRing.rotation.z += deltaTime * 2; // Rotate ring
+        }
+
+        // Animate interaction range ring (always visible when chest is closed)
+        if (!this.isOpen && this.interactionRangeRing) {
+            this.interactionRangeRing.rotation.z += deltaTime * 0.5; // Slow rotation
+            // Subtle pulsing opacity
+            const pulse = Math.sin(Date.now() * 0.001) * 0.1 + 0.25;
+            this.interactionRangeRing.material.opacity = pulse;
         }
     }
 
