@@ -104,6 +104,20 @@ export class TreasureChest {
         group.add(glow);
         this.glow = glow;
 
+        // Add proximity ring indicator
+        const ringGeometry = new THREE.TorusGeometry(2.5, 0.15, 8, 32);
+        const ringMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffd700,
+            transparent: true,
+            opacity: 0,
+            blending: THREE.AdditiveBlending
+        });
+        const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+        ring.position.y = 0.1;
+        ring.rotation.x = Math.PI / 2;
+        group.add(ring);
+        this.proximityRing = ring;
+
         this.scene.add(group);
         this.chest = group;
     }
@@ -225,6 +239,37 @@ export class TreasureChest {
     }
 
     /**
+     * Update proximity feedback based on player distance
+     * @param {number} distance - Distance from player to chest
+     */
+    updateProximity(distance) {
+        if (this.isOpen) return;
+
+        const interactionRange = 8;
+
+        if (distance < interactionRange) {
+            // Player is within interaction range
+            const proximityFactor = 1 - (distance / interactionRange);
+
+            // Intensify glow based on proximity
+            if (this.glow) {
+                this.glow.material.opacity = 0.15 + proximityFactor * 0.25;
+            }
+
+            // Show and pulse proximity ring
+            if (this.proximityRing) {
+                this.proximityRing.material.opacity = 0.3 + proximityFactor * 0.4;
+                this.proximityRing.visible = true;
+            }
+        } else {
+            // Player is out of range - use default glow
+            if (this.proximityRing) {
+                this.proximityRing.visible = false;
+            }
+        }
+    }
+
+    /**
      * Update animation
      */
     update(deltaTime) {
@@ -266,6 +311,11 @@ export class TreasureChest {
             const pulse = Math.sin(Date.now() * 0.002) * 0.05 + 0.1;
             this.glow.material.opacity = pulse;
             this.glow.rotation.y += deltaTime * 0.5;
+        }
+
+        // Animate proximity ring rotation
+        if (!this.isOpen && this.proximityRing && this.proximityRing.visible) {
+            this.proximityRing.rotation.z += deltaTime * 2; // Rotate ring
         }
     }
 

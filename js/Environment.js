@@ -147,6 +147,26 @@ export class Environment {
             this.scene.add(light);
             this.lights.volumetric.push(light);
         });
+
+        // Additional overhead spotlights for dramatic effect
+        const spotlightConfigs = [
+            { color: 0xaaddff, intensity: 2.0, position: [8, 18, 8], angle: Math.PI / 6 },
+            { color: 0x88ccff, intensity: 1.8, position: [-8, 18, -8], angle: Math.PI / 5 },
+            { color: 0x99ddff, intensity: 1.5, position: [12, 18, -10], angle: Math.PI / 5.5 },
+            { color: 0xbbddff, intensity: 1.6, position: [-10, 18, 12], angle: Math.PI / 5.5 }
+        ];
+
+        this.overheadSpotlights = [];
+        spotlightConfigs.forEach(config => {
+            const spotlight = new THREE.SpotLight(config.color, config.intensity, 30, config.angle, 0.5);
+            spotlight.position.set(...config.position);
+            spotlight.target.position.set(config.position[0] * 0.3, 0, config.position[2] * 0.3);
+            spotlight.castShadow = false; // Disable shadows for performance
+
+            this.scene.add(spotlight);
+            this.scene.add(spotlight.target);
+            this.overheadSpotlights.push(spotlight);
+        });
     }
 
     /**
@@ -187,65 +207,93 @@ export class Environment {
     }
 
     /**
-     * Creates colorful, magical particle system
+     * Creates realistic bubble system
      */
     createEnhancedParticles() {
-        const particleCount = 300; // Increased from 200
-        const geometry = new THREE.BufferGeometry();
-        const positions = [];
-        const colors = [];
-        const velocities = [];
-        const sizes = [];
+        const bubbleCount = 150; // Reduced for performance with real geometry
+        this.bubbles = [];
 
-        // Color palette for whimsical particles
+        // Create bubble texture (circular sprite)
+        const bubbleTexture = this.createBubbleTexture();
+
+        // Color palette for bubbles (more subtle, underwater-appropriate)
         const colorPalette = [
-            new THREE.Color(0x88ddff), // Cyan
-            new THREE.Color(0xffaa88), // Coral
-            new THREE.Color(0xaaffdd), // Mint
-            new THREE.Color(0xffddaa), // Peach
-            new THREE.Color(0xdd88ff), // Purple
-            new THREE.Color(0xffff88)  // Yellow
+            new THREE.Color(0xaaddff), // Light cyan
+            new THREE.Color(0xcceeFF), // Very light blue
+            new THREE.Color(0xbbddff), // Soft blue
+            new THREE.Color(0xddeeff)  // Almost white
         ];
 
-        for (let i = 0; i < particleCount; i++) {
+        for (let i = 0; i < bubbleCount; i++) {
+            // Create sphere geometry for each bubble
+            const size = Math.random() * 0.3 + 0.1;
+            const geometry = new THREE.SphereGeometry(size, 8, 8);
+
+            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+
+            const material = new THREE.MeshPhongMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.4,
+                shininess: 100,
+                specular: 0xffffff,
+                envMap: null,
+                refractionRatio: 0.98
+            });
+
+            const bubble = new THREE.Mesh(geometry, material);
+
             // Random position
-            positions.push(
+            bubble.position.set(
                 (Math.random() - 0.5) * this.roomSize * 0.8,
                 Math.random() * 18,
                 (Math.random() - 0.5) * this.roomSize * 0.8
             );
 
-            // Colorful particles
-            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
-            colors.push(color.r, color.g, color.b);
+            // Store velocity in userData
+            bubble.userData = {
+                velocity: new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.02,
+                    Math.random() * 0.04 + 0.02,
+                    (Math.random() - 0.5) * 0.02
+                ),
+                wobble: Math.random() * Math.PI * 2,
+                wobbleSpeed: Math.random() * 0.05 + 0.02
+            };
 
-            // Upward velocity
-            velocities.push(
-                (Math.random() - 0.5) * 0.03,
-                Math.random() * 0.06 + 0.03,
-                (Math.random() - 0.5) * 0.03
-            );
-
-            // Varied sizes
-            sizes.push(Math.random() * 0.5 + 0.2);
+            this.scene.add(bubble);
+            this.bubbles.push(bubble);
         }
+    }
 
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-        geometry.setAttribute('velocity', new THREE.Float32BufferAttribute(velocities, 3));
-        geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
+    /**
+     * Create bubble texture for circular appearance
+     */
+    createBubbleTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 64;
+        canvas.height = 64;
+        const ctx = canvas.getContext('2d');
 
-        const material = new THREE.PointsMaterial({
-            size: 0.5,
-            transparent: true,
-            opacity: 0.8,
-            vertexColors: true,
-            sizeAttenuation: true,
-            blending: THREE.AdditiveBlending
-        });
+        // Create radial gradient for bubble effect
+        const gradient = ctx.createRadialGradient(24, 24, 0, 32, 32, 32);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+        gradient.addColorStop(0.4, 'rgba(200, 230, 255, 0.8)');
+        gradient.addColorStop(0.8, 'rgba(150, 200, 255, 0.4)');
+        gradient.addColorStop(1, 'rgba(100, 180, 255, 0)');
 
-        this.particleSystem = new THREE.Points(geometry, material);
-        this.scene.add(this.particleSystem);
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 64, 64);
+
+        // Add highlight
+        const highlight = ctx.createRadialGradient(20, 20, 0, 20, 20, 10);
+        highlight.addColorStop(0, 'rgba(255, 255, 255, 0.9)');
+        highlight.addColorStop(1, 'rgba(255, 255, 255, 0)');
+        ctx.fillStyle = highlight;
+        ctx.fillRect(0, 0, 64, 64);
+
+        const texture = new THREE.CanvasTexture(canvas);
+        return texture;
     }
 
     /**
@@ -366,39 +414,37 @@ export class Environment {
                 0.4 + Math.sin(this.causticTime * 2) * 0.2;
         }
 
-        // Animate particles
-        if (this.particleSystem) {
-            const positions = this.particleSystem.geometry.attributes.position;
-            const velocities = this.particleSystem.geometry.attributes.velocity;
+        // Animate bubble meshes
+        if (this.bubbles) {
+            this.bubbles.forEach((bubble, i) => {
+                const userData = bubble.userData;
 
-            for (let i = 0; i < positions.count; i++) {
-                let x = positions.getX(i);
-                let y = positions.getY(i);
-                let z = positions.getZ(i);
+                // Update wobble animation
+                userData.wobble += userData.wobbleSpeed;
 
-                const vx = velocities.getX(i);
-                const vy = velocities.getY(i);
-                const vz = velocities.getZ(i);
+                // Apply velocity with wobble motion
+                bubble.position.x += userData.velocity.x + Math.cos(userData.wobble) * 0.02;
+                bubble.position.y += userData.velocity.y;
+                bubble.position.z += userData.velocity.z + Math.sin(userData.wobble) * 0.02;
 
-                // Add swirl motion
-                const swirlX = Math.cos(this.causticTime + i) * 0.02;
-                const swirlZ = Math.sin(this.causticTime + i) * 0.02;
+                // Add slight rotation for realism
+                bubble.rotation.y += 0.01;
+                bubble.rotation.x += 0.005;
 
-                x += vx + swirlX;
-                y += vy;
-                z += vz + swirlZ;
+                // Reset bubbles that reach the top
+                if (bubble.position.y > 19) {
+                    bubble.position.y = 0.5;
+                    bubble.position.x = (Math.random() - 0.5) * this.roomSize * 0.8;
+                    bubble.position.z = (Math.random() - 0.5) * this.roomSize * 0.8;
 
-                // Reset particles that reach the top
-                if (y > 19) {
-                    y = 0;
-                    x = (Math.random() - 0.5) * this.roomSize * 0.8;
-                    z = (Math.random() - 0.5) * this.roomSize * 0.8;
+                    // Reset wobble
+                    userData.wobble = Math.random() * Math.PI * 2;
                 }
 
-                positions.setXYZ(i, x, y, z);
-            }
-
-            positions.needsUpdate = true;
+                // Pulse opacity slightly for shimmer effect
+                const opacityPulse = 0.35 + Math.sin(this.causticTime * 3 + i * 0.5) * 0.1;
+                bubble.material.opacity = opacityPulse;
+            });
         }
 
         // Animate god rays with more dramatic movement
@@ -445,5 +491,21 @@ export class Environment {
             const baseIntensity = [1.2, 1.0, 0.8, 0.9, 0.7][index];
             light.intensity = baseIntensity + Math.sin(this.causticTime * 2 + index) * 0.2;
         });
+
+        // Animate overhead spotlights for dynamic light streaming effect
+        if (this.overheadSpotlights) {
+            this.overheadSpotlights.forEach((spotlight, index) => {
+                const baseIntensities = [2.0, 1.8, 1.5, 1.6];
+                const baseIntensity = baseIntensities[index];
+
+                // Pulse intensity to simulate water surface movement
+                spotlight.intensity = baseIntensity + Math.sin(this.causticTime * 1.5 + index * 1.2) * 0.4;
+
+                // Slight position wobble to simulate light refraction through water
+                const wobbleAmount = 0.8;
+                spotlight.position.x += Math.sin(this.causticTime * 0.8 + index) * wobbleAmount * 0.01;
+                spotlight.position.z += Math.cos(this.causticTime * 0.8 + index) * wobbleAmount * 0.01;
+            });
+        }
     }
 }

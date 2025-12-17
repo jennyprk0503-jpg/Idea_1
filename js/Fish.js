@@ -42,82 +42,184 @@ class Fish {
     }
 
     /**
-     * Create fish geometry and mesh with enhanced whimsical materials
+     * Create realistic fish geometry with scale pattern
      */
     createMesh() {
         const group = new THREE.Group();
 
-        // Body (ellipsoid) with emissive glow
-        const bodyGeometry = new THREE.SphereGeometry(this.size, 12, 10); // More segments for smoother look
-        bodyGeometry.scale(1.5, 0.8, 0.8);
+        // Create scale pattern texture
+        const scaleTexture = this.createScaleTexture();
+
+        // Body - more elongated and fish-shaped
+        const bodyGeometry = new THREE.SphereGeometry(this.size, 16, 12);
+        bodyGeometry.scale(2.2, 0.7, 0.6); // Much more elongated
 
         const bodyMaterial = new THREE.MeshPhongMaterial({
             color: this.color,
             shininess: 90,
-            flatShading: false, // Smooth shading for better look
+            flatShading: false,
             emissive: this.color,
-            emissiveIntensity: 0.3, // Adds glow
-            specular: 0xffffff
+            emissiveIntensity: 0.3,
+            specular: 0xffffff,
+            map: scaleTexture,
+            bumpMap: scaleTexture,
+            bumpScale: 0.02
         });
 
         const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
         group.add(body);
         this.body = body;
 
-        // Tail with vibrant colors
-        const tailGeometry = new THREE.ConeGeometry(this.size * 0.5, this.size * 0.8, 6);
+        // Fan-shaped tail fin
+        const tailShape = new THREE.Shape();
+        tailShape.moveTo(0, 0);
+        tailShape.quadraticCurveTo(-this.size * 0.8, -this.size * 0.6, -this.size * 1.0, -this.size * 0.4);
+        tailShape.lineTo(-this.size * 0.9, 0);
+        tailShape.lineTo(-this.size * 1.0, this.size * 0.4);
+        tailShape.quadraticCurveTo(-this.size * 0.8, this.size * 0.6, 0, 0);
+
+        const tailGeometry = new THREE.ShapeGeometry(tailShape);
         const tailMaterial = new THREE.MeshPhongMaterial({
             color: this.color,
             shininess: 80,
             flatShading: false,
             emissive: this.color,
-            emissiveIntensity: 0.25
+            emissiveIntensity: 0.25,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.9
         });
 
         const tail = new THREE.Mesh(tailGeometry, tailMaterial);
-        tail.rotation.z = Math.PI / 2;
-        tail.position.x = -this.size * 1.2;
+        tail.position.x = -this.size * 1.3;
         group.add(tail);
         this.tail = tail;
 
-        // Fins with transparency and glow
-        const finGeometry = new THREE.ConeGeometry(this.size * 0.3, this.size * 0.6, 4);
-        const finMaterial = new THREE.MeshPhongMaterial({
+        // Dorsal fin (top)
+        const dorsalShape = new THREE.Shape();
+        dorsalShape.moveTo(0, 0);
+        dorsalShape.quadraticCurveTo(-this.size * 0.3, this.size * 0.5, -this.size * 0.5, this.size * 0.4);
+        dorsalShape.lineTo(-this.size * 0.4, 0);
+        dorsalShape.lineTo(0, 0);
+
+        const dorsalGeometry = new THREE.ShapeGeometry(dorsalShape);
+        const dorsalMaterial = new THREE.MeshPhongMaterial({
             color: this.color,
             shininess: 80,
-            transparent: true,
-            opacity: 0.85,
             flatShading: false,
             emissive: this.color,
-            emissiveIntensity: 0.2
+            emissiveIntensity: 0.2,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.85
         });
 
-        const finTop = new THREE.Mesh(finGeometry, finMaterial);
-        finTop.rotation.z = Math.PI / 2;
-        finTop.rotation.y = Math.PI / 2;
-        finTop.position.set(0, this.size * 0.5, 0);
-        group.add(finTop);
+        const dorsalFin = new THREE.Mesh(dorsalGeometry, dorsalMaterial);
+        dorsalFin.position.set(-this.size * 0.2, this.size * 0.5, 0);
+        dorsalFin.rotation.x = Math.PI / 2;
+        group.add(dorsalFin);
 
-        // Eyes with white glow
-        const eyeGeometry = new THREE.SphereGeometry(this.size * 0.15, 8, 8);
+        // Pectoral fins (sides)
+        const pectoralShape = new THREE.Shape();
+        pectoralShape.moveTo(0, 0);
+        pectoralShape.quadraticCurveTo(this.size * 0.3, this.size * 0.3, this.size * 0.5, this.size * 0.2);
+        pectoralShape.lineTo(this.size * 0.3, 0);
+        pectoralShape.lineTo(0, 0);
+
+        const pectoralGeometry = new THREE.ShapeGeometry(pectoralShape);
+        const pectoralMaterial = new THREE.MeshPhongMaterial({
+            color: this.color,
+            shininess: 80,
+            flatShading: false,
+            emissive: this.color,
+            emissiveIntensity: 0.2,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        const pectoralLeft = new THREE.Mesh(pectoralGeometry, pectoralMaterial);
+        pectoralLeft.position.set(this.size * 0.3, 0, this.size * 0.4);
+        pectoralLeft.rotation.y = -Math.PI / 4;
+        group.add(pectoralLeft);
+
+        const pectoralRight = new THREE.Mesh(pectoralGeometry, pectoralMaterial);
+        pectoralRight.position.set(this.size * 0.3, 0, -this.size * 0.4);
+        pectoralRight.rotation.y = Math.PI / 4;
+        group.add(pectoralRight);
+
+        // Eyes with realistic look
+        const eyeGeometry = new THREE.SphereGeometry(this.size * 0.15, 12, 12);
         const eyeMaterial = new THREE.MeshPhongMaterial({
-            color: 0xffffff,
-            shininess: 120,
-            emissive: 0xffffff,
-            emissiveIntensity: 0.5
+            color: 0x000000,
+            shininess: 150,
+            emissive: 0x222222,
+            emissiveIntensity: 0.3
         });
 
         const eyeLeft = new THREE.Mesh(eyeGeometry, eyeMaterial);
-        eyeLeft.position.set(this.size * 0.8, this.size * 0.3, this.size * 0.4);
+        eyeLeft.position.set(this.size * 1.0, this.size * 0.25, this.size * 0.35);
         group.add(eyeLeft);
 
         const eyeRight = new THREE.Mesh(eyeGeometry, eyeMaterial);
-        eyeRight.position.set(this.size * 0.8, this.size * 0.3, -this.size * 0.4);
+        eyeRight.position.set(this.size * 1.0, this.size * 0.25, -this.size * 0.35);
         group.add(eyeRight);
+
+        // Eye highlights
+        const highlightGeometry = new THREE.SphereGeometry(this.size * 0.06, 8, 8);
+        const highlightMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.9
+        });
+
+        const highlightLeft = new THREE.Mesh(highlightGeometry, highlightMaterial);
+        highlightLeft.position.set(this.size * 1.05, this.size * 0.3, this.size * 0.38);
+        group.add(highlightLeft);
+
+        const highlightRight = new THREE.Mesh(highlightGeometry, highlightMaterial);
+        highlightRight.position.set(this.size * 1.05, this.size * 0.3, -this.size * 0.38);
+        group.add(highlightRight);
 
         this.mesh = group;
         this.mesh.position.copy(this.position);
         this.scene.add(this.mesh);
+    }
+
+    /**
+     * Create procedural scale pattern texture
+     */
+    createScaleTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 128;
+        canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+
+        // Base color with slight variation
+        const baseColor = new THREE.Color(this.color);
+        ctx.fillStyle = `rgb(${baseColor.r * 255}, ${baseColor.g * 255}, ${baseColor.b * 255})`;
+        ctx.fillRect(0, 0, 128, 128);
+
+        // Draw scale pattern
+        ctx.strokeStyle = `rgba(0, 0, 0, 0.1)`;
+        ctx.lineWidth = 1;
+
+        const scaleSize = 8;
+        for (let y = 0; y < 128; y += scaleSize) {
+            for (let x = 0; x < 128; x += scaleSize) {
+                const offsetX = (y / scaleSize) % 2 === 0 ? 0 : scaleSize / 2;
+                ctx.beginPath();
+                ctx.arc(x + offsetX, y, scaleSize / 2, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+        }
+
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(3, 2);
+
+        return texture;
     }
 
     /**

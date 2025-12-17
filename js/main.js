@@ -276,12 +276,14 @@ class UnderwaterExploration {
     onGestureDetected(gesture) {
         if (!this.isStarted || !this.gesturesEnabled) return;
 
+        // Note: Swapped rotation directions for intuitive control
+        // (left palm should turn left, right palm should turn right)
         switch (gesture.type) {
             case 'palm_left':
-                this.cameraController.rotateLeft(gesture.confidence);
+                this.cameraController.rotateRight(gesture.confidence);
                 break;
             case 'palm_right':
-                this.cameraController.rotateRight(gesture.confidence);
+                this.cameraController.rotateLeft(gesture.confidence);
                 break;
             case 'fist_right':
                 this.attemptChestInteraction();
@@ -389,9 +391,14 @@ class UnderwaterExploration {
             this.miniMap.update();
         }
 
-        // Check proximity to treasure
+        // Check proximity to treasure and update visual feedback
         if (this.treasureChest && !this.treasureChest.isOpen) {
             const distance = this.camera.position.distanceTo(this.treasureChest.position);
+
+            // Update proximity visual feedback
+            this.treasureChest.updateProximity(distance);
+
+            // Show interaction prompt when in range
             if (distance < 8) {
                 this.showInteractionPrompt('Right fist gesture or press E to open chest!', 100);
             }
