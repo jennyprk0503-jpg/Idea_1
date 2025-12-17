@@ -107,28 +107,43 @@ class UnderwaterExploration {
 
     /**
      * Setup post-processing effects for magical, whimsical atmosphere
+     * Falls back to regular rendering if post-processing is unavailable
      */
     setupPostProcessing() {
         this.updateLoadingStatus('Adding magical effects...', 15);
 
-        // Create effect composer
-        this.composer = new THREE.EffectComposer(this.renderer);
+        try {
+            // Check if post-processing classes are available
+            if (typeof THREE.EffectComposer === 'undefined' ||
+                typeof THREE.RenderPass === 'undefined' ||
+                typeof THREE.UnrealBloomPass === 'undefined') {
+                console.warn('⚠️ Post-processing not available, using standard rendering');
+                this.composer = null;
+                return;
+            }
 
-        // Add render pass
-        const renderPass = new THREE.RenderPass(this.scene, this.camera);
-        this.composer.addPass(renderPass);
+            // Create effect composer
+            this.composer = new THREE.EffectComposer(this.renderer);
 
-        // Add bloom pass for magical glow
-        const bloomPass = new THREE.UnrealBloomPass(
-            new THREE.Vector2(window.innerWidth, window.innerHeight),
-            1.5,    // strength - increased for more glow
-            0.6,    // radius - medium spread
-            0.3     // threshold - what brightnesses glow
-        );
-        this.composer.addPass(bloomPass);
-        this.bloomPass = bloomPass; // Store reference for later adjustment
+            // Add render pass
+            const renderPass = new THREE.RenderPass(this.scene, this.camera);
+            this.composer.addPass(renderPass);
 
-        console.log('✨ Post-processing enabled with bloom effects');
+            // Add bloom pass for magical glow
+            const bloomPass = new THREE.UnrealBloomPass(
+                new THREE.Vector2(window.innerWidth, window.innerHeight),
+                1.5,    // strength - increased for more glow
+                0.6,    // radius - medium spread
+                0.3     // threshold - what brightnesses glow
+            );
+            this.composer.addPass(bloomPass);
+            this.bloomPass = bloomPass; // Store reference for later adjustment
+
+            console.log('✨ Post-processing enabled with bloom effects');
+        } catch (error) {
+            console.warn('⚠️ Post-processing setup failed, falling back to standard rendering:', error);
+            this.composer = null;
+        }
     }
 
     async loadResources() {
