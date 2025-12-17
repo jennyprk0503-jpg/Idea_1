@@ -15,6 +15,14 @@
         <!-- Webcam video (hidden, used for gesture tracking) -->
         <video id="webcam" autoplay playsinline></video>
 
+        <!-- Background music (calm, soothing ambient) -->
+        <audio id="background-music" loop preload="auto">
+            <!-- You can replace this with your own music file -->
+            <source src="https://cdn.pixabay.com/audio/2022/05/13/audio_257112e10e.mp3" type="audio/mpeg">
+            <!-- Fallback: Ocean waves ambient sound -->
+            <source src="https://cdn.pixabay.com/audio/2021/08/04/audio_12b0c7443c.mp3" type="audio/mpeg">
+        </audio>
+
         <!-- Mini-map viewport -->
         <div id="minimap-container">
             <canvas id="minimap"></canvas>
@@ -73,6 +81,9 @@
 
         <!-- Settings panel -->
         <div id="settings-panel">
+            <button id="toggle-music" class="control-btn">
+                <span id="music-icon">🎵</span> Music: <span id="music-toggle-text">ON</span>
+            </button>
             <button id="toggle-gestures" class="control-btn">
                 <span id="gesture-icon">👋</span> Gestures: <span id="gesture-toggle-text">ON</span>
             </button>
