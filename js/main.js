@@ -33,11 +33,6 @@ class UnderwaterExploration {
         this.isStarted = false;
         this.gesturesEnabled = true;
         this.minimapEnabled = true;
-        this.musicEnabled = true;
-
-        // Background music
-        this.backgroundMusic = document.getElementById('background-music');
-        this.backgroundMusic.volume = 0.3; // Set comfortable volume
 
         // UI Elements
         this.ui = {
@@ -211,20 +206,6 @@ class UnderwaterExploration {
         window.addEventListener('keydown', (e) => this.onKeyDown(e));
 
         // Settings buttons
-        document.getElementById('toggle-music').addEventListener('click', () => {
-            this.musicEnabled = !this.musicEnabled;
-            document.getElementById('music-toggle-text').textContent =
-                this.musicEnabled ? 'ON' : 'OFF';
-            document.getElementById('music-icon').textContent =
-                this.musicEnabled ? '🎵' : '🔇';
-
-            if (this.musicEnabled) {
-                this.backgroundMusic.play().catch(err => console.log('Music autoplay prevented:', err));
-            } else {
-                this.backgroundMusic.pause();
-            }
-        });
-
         document.getElementById('toggle-gestures').addEventListener('click', () => {
             this.gesturesEnabled = !this.gesturesEnabled;
             document.getElementById('gesture-toggle-text').textContent =
@@ -261,17 +242,6 @@ class UnderwaterExploration {
 
         // Hide loading screen
         this.ui.loadingScreen.classList.add('hidden');
-
-        // Start background music
-        if (this.musicEnabled) {
-            this.backgroundMusic.play().catch(err => {
-                console.log('Music autoplay prevented. User can enable via button.', err);
-                // Update UI to show music is off if autoplay failed
-                this.musicEnabled = false;
-                document.getElementById('music-toggle-text').textContent = 'OFF';
-                document.getElementById('music-icon').textContent = '🔇';
-            });
-        }
 
         // Start gesture controller
         if (this.gesturesEnabled) {
