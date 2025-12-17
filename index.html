@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Underwater Experience</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="underwater-container">
+        <!-- Canvas for rendering underwater scene -->
+        <canvas id="underwaterCanvas"></canvas>
+
+        <!-- Light rays overlay -->
+        <div id="lightRays"></div>
+
+        <!-- UI Controls -->
+        <div id="controls">
+            <button id="toggleSound" class="control-btn">🔊 Sound</button>
+            <button id="toggleFullscreen" class="control-btn">⛶ Fullscreen</button>
+            <button id="addFish" class="control-btn">🐟 Add Fish</button>
+            <div id="fishCounter">Fish: <span id="fishCount">20</span></div>
+        </div>
+
+        <!-- Welcome overlay -->
+        <div id="welcome">
+            <h1>🌊 Interactive Underwater Experience</h1>
+            <p>Click anywhere to dive in...</p>
+            <ul>
+                <li>Move your mouse to attract fish</li>
+                <li>Click to create ripples and bubbles</li>
+                <li>Press SPACE to add more fish</li>
+                <li>Press F to toggle fullscreen</li>
+            </ul>
+            <button id="startBtn">Enter the Ocean</button>
+        </div>
+    </div>
+
+    <!-- Audio elements -->
+    <audio id="ambientSound" loop>
+        <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=" type="audio/wav">
+    </audio>
+
+    <script src="script.js"></script>
+</body>
+</html>
