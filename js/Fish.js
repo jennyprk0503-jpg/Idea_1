@@ -42,30 +42,36 @@ class Fish {
     }
 
     /**
-     * Create fish geometry and mesh
+     * Create fish geometry and mesh with enhanced whimsical materials
      */
     createMesh() {
         const group = new THREE.Group();
 
-        // Body (ellipsoid)
-        const bodyGeometry = new THREE.SphereGeometry(this.size, 8, 6);
+        // Body (ellipsoid) with emissive glow
+        const bodyGeometry = new THREE.SphereGeometry(this.size, 12, 10); // More segments for smoother look
         bodyGeometry.scale(1.5, 0.8, 0.8);
 
         const bodyMaterial = new THREE.MeshPhongMaterial({
             color: this.color,
-            shininess: 60,
-            flatShading: true
+            shininess: 90,
+            flatShading: false, // Smooth shading for better look
+            emissive: this.color,
+            emissiveIntensity: 0.3, // Adds glow
+            specular: 0xffffff
         });
 
         const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
         group.add(body);
+        this.body = body;
 
-        // Tail
-        const tailGeometry = new THREE.ConeGeometry(this.size * 0.5, this.size * 0.8, 4);
+        // Tail with vibrant colors
+        const tailGeometry = new THREE.ConeGeometry(this.size * 0.5, this.size * 0.8, 6);
         const tailMaterial = new THREE.MeshPhongMaterial({
             color: this.color,
-            shininess: 60,
-            flatShading: true
+            shininess: 80,
+            flatShading: false,
+            emissive: this.color,
+            emissiveIntensity: 0.25
         });
 
         const tail = new THREE.Mesh(tailGeometry, tailMaterial);
@@ -74,14 +80,16 @@ class Fish {
         group.add(tail);
         this.tail = tail;
 
-        // Fins (simple triangular fins)
-        const finGeometry = new THREE.ConeGeometry(this.size * 0.3, this.size * 0.6, 3);
+        // Fins with transparency and glow
+        const finGeometry = new THREE.ConeGeometry(this.size * 0.3, this.size * 0.6, 4);
         const finMaterial = new THREE.MeshPhongMaterial({
             color: this.color,
-            shininess: 60,
+            shininess: 80,
             transparent: true,
-            opacity: 0.8,
-            flatShading: true
+            opacity: 0.85,
+            flatShading: false,
+            emissive: this.color,
+            emissiveIntensity: 0.2
         });
 
         const finTop = new THREE.Mesh(finGeometry, finMaterial);
@@ -90,11 +98,13 @@ class Fish {
         finTop.position.set(0, this.size * 0.5, 0);
         group.add(finTop);
 
-        // Eyes
-        const eyeGeometry = new THREE.SphereGeometry(this.size * 0.15, 6, 6);
+        // Eyes with white glow
+        const eyeGeometry = new THREE.SphereGeometry(this.size * 0.15, 8, 8);
         const eyeMaterial = new THREE.MeshPhongMaterial({
-            color: 0x000000,
-            shininess: 100
+            color: 0xffffff,
+            shininess: 120,
+            emissive: 0xffffff,
+            emissiveIntensity: 0.5
         });
 
         const eyeLeft = new THREE.Mesh(eyeGeometry, eyeMaterial);
@@ -111,17 +121,20 @@ class Fish {
     }
 
     /**
-     * Generate random fish color (blues, greens, oranges)
+     * Generate vibrant, whimsical fish colors
      */
     randomFishColor() {
         const colors = [
-            0xff6b35, // Orange
-            0xf7931e, // Yellow-orange
-            0x4ecdc4, // Turquoise
-            0x44af69, // Green
-            0x3498db, // Blue
-            0x9b59b6, // Purple
-            0xe74c3c  // Red
+            0xff7733, // Vibrant Orange
+            0xffbb33, // Golden Yellow
+            0x33ddff, // Bright Cyan
+            0x44ffaa, // Neon Green
+            0x5588ff, // Bright Blue
+            0xdd77ff, // Vibrant Purple
+            0xff5577, // Hot Pink
+            0x77ffff, // Aqua
+            0xffaa77, // Peach
+            0xaaff77  // Lime
         ];
         return colors[Math.floor(Math.random() * colors.length)];
     }
@@ -241,7 +254,7 @@ class Fish {
     }
 
     /**
-     * Avoid player (or seek if curious)
+     * Avoid player with enhanced glow effects
      */
     reactToPlayer(playerPosition) {
         const distance = this.position.distanceTo(playerPosition);
@@ -257,10 +270,17 @@ class Fish {
 
             this.applyForce(steer);
 
-            // Temporary color change when fleeing
-            this.mesh.children[0].material.emissive.setHex(0x111111);
+            // Enhanced glow when startled - pulse brighter
+            if (this.body) {
+                this.body.material.emissive.setHex(this.color);
+                this.body.material.emissiveIntensity = 0.6; // Brighter glow
+            }
         } else {
-            this.mesh.children[0].material.emissive.setHex(0x000000);
+            // Return to normal glow
+            if (this.body) {
+                this.body.material.emissive.setHex(this.color);
+                this.body.material.emissiveIntensity = 0.3;
+            }
         }
     }
 

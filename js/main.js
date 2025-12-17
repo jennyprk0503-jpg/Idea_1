@@ -1,8 +1,8 @@
 /**
- * UNDERWATER EXPLORATION - Main Entry Point
+ * UNDERWATER EXPLORATION - Main Entry Point (Enhanced)
  *
  * This file coordinates all subsystems and manages the application lifecycle.
- * It handles scene initialization, loading, and the main animation loop.
+ * Features enhanced post-processing with bloom and whimsical lighting effects.
  */
 
 import { Environment } from './Environment.js';
@@ -18,6 +18,7 @@ class UnderwaterExploration {
         this.scene = null;
         this.camera = null;
         this.renderer = null;
+        this.composer = null; // Post-processing composer
 
         // Subsystems
         this.environment = null;
@@ -50,9 +51,10 @@ class UnderwaterExploration {
     }
 
     async init() {
-        console.log('🌊 Initializing Underwater Exploration...');
+        console.log('🌊 Initializing Enhanced Underwater Exploration...');
 
         this.setupThreeJS();
+        this.setupPostProcessing();
         await this.loadResources();
         this.setupEventListeners();
         this.setupUI();
@@ -68,7 +70,7 @@ class UnderwaterExploration {
 
         // Create scene
         this.scene = new THREE.Scene();
-        this.scene.fog = new THREE.FogExp2(0x0a4d68, 0.015); // Underwater fog
+        this.scene.fog = new THREE.FogExp2(0x1a3d5c, 0.012); // Lighter, more atmospheric fog
 
         // Create camera
         this.camera = new THREE.PerspectiveCamera(
@@ -79,17 +81,23 @@ class UnderwaterExploration {
         );
         this.camera.position.set(0, 5, 0);
 
-        // Create renderer
+        // Create renderer with enhanced settings
         this.renderer = new THREE.WebGLRenderer({
             antialias: true,
-            alpha: false
+            alpha: false,
+            powerPreference: 'high-performance'
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        // Enhanced tone mapping for more vibrant colors
         this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 1.2;
+        this.renderer.toneMappingExposure = 1.5; // Increased for brighter, more whimsical look
+
+        // Color management
+        this.renderer.outputColorSpace = THREE.SRGBColorSpace;
 
         document.getElementById('canvas-container').appendChild(this.renderer.domElement);
 
@@ -97,17 +105,43 @@ class UnderwaterExploration {
         window.addEventListener('resize', () => this.onWindowResize());
     }
 
+    /**
+     * Setup post-processing effects for magical, whimsical atmosphere
+     */
+    setupPostProcessing() {
+        this.updateLoadingStatus('Adding magical effects...', 15);
+
+        // Create effect composer
+        this.composer = new THREE.EffectComposer(this.renderer);
+
+        // Add render pass
+        const renderPass = new THREE.RenderPass(this.scene, this.camera);
+        this.composer.addPass(renderPass);
+
+        // Add bloom pass for magical glow
+        const bloomPass = new THREE.UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth, window.innerHeight),
+            1.5,    // strength - increased for more glow
+            0.6,    // radius - medium spread
+            0.3     // threshold - what brightnesses glow
+        );
+        this.composer.addPass(bloomPass);
+        this.bloomPass = bloomPass; // Store reference for later adjustment
+
+        console.log('✨ Post-processing enabled with bloom effects');
+    }
+
     async loadResources() {
         this.updateLoadingStatus('Building underwater environment...', 30);
 
-        // Create environment (room, lighting, particles)
+        // Create enhanced environment
         this.environment = new Environment(this.scene);
         await this.environment.init();
 
         this.updateLoadingStatus('Spawning fish...', 50);
 
-        // Create fish school
-        this.fishSchool = new FishSchool(this.scene, 15); // Start with 15 fish
+        // Create fish school with more fish for fuller scene
+        this.fishSchool = new FishSchool(this.scene, 20); // Increased from 15
 
         this.updateLoadingStatus('Hiding treasure...', 60);
 
@@ -300,6 +334,10 @@ class UnderwaterExploration {
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+        if (this.composer) {
+            this.composer.setSize(window.innerWidth, window.innerHeight);
+        }
     }
 
     toggleFullscreen() {
@@ -351,7 +389,13 @@ class UnderwaterExploration {
         const deltaTime = 1 / 60; // Approximate 60 FPS
 
         this.update(deltaTime);
-        this.renderer.render(this.scene, this.camera);
+
+        // Use post-processing composer instead of direct rendering
+        if (this.composer) {
+            this.composer.render();
+        } else {
+            this.renderer.render(this.scene, this.camera);
+        }
     }
 }
 

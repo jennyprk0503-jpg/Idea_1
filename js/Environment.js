@@ -1,8 +1,11 @@
 /**
- * ENVIRONMENT MODULE
+ * ENVIRONMENT MODULE (Enhanced)
  *
- * Handles the underwater room, lighting, particle systems, and atmospheric effects.
- * Creates the dream-like, installation-style aesthetic with caustics and god rays.
+ * Creates a whimsical, immersive underwater room with:
+ * - Dramatic volumetric god rays
+ * - Vibrant, colorful lighting
+ * - Enchanted particle effects
+ * - Animated caustics and water surface
  */
 
 export class Environment {
@@ -11,6 +14,7 @@ export class Environment {
         this.roomSize = 50;
         this.particles = [];
         this.godRays = [];
+        this.lightOrbs = [];
         this.causticTime = 0;
 
         // References to scene objects
@@ -26,39 +30,46 @@ export class Environment {
         this.createRoom();
         this.createLighting();
         this.createCeiling();
-        this.createParticles();
-        this.createGodRays();
+        this.createEnhancedParticles();
+        this.createDramaticGodRays();
+        this.createLightOrbs();
     }
 
     /**
-     * Creates the underwater room with walls and floor
+     * Creates the underwater room with enhanced materials
      */
     createRoom() {
         const size = this.roomSize;
         const wallHeight = 20;
         const wallThickness = 0.5;
 
-        // Material for walls - semi-transparent blue-green
+        // Enhanced wall material with shimmer
         const wallMaterial = new THREE.MeshPhongMaterial({
-            color: 0x0a4d68,
+            color: 0x1a4d68,
             transparent: true,
-            opacity: 0.3,
+            opacity: 0.4,
             side: THREE.DoubleSide,
-            shininess: 60
+            shininess: 80,
+            emissive: 0x0a2d48,
+            emissiveIntensity: 0.2
         });
 
-        // Floor
-        const floorGeometry = new THREE.PlaneGeometry(size, size, 20, 20);
+        // Enhanced floor with more detail
+        const floorGeometry = new THREE.PlaneGeometry(size, size, 30, 30);
         const floorMaterial = new THREE.MeshPhongMaterial({
             color: 0x0a3d58,
-            shininess: 40
+            shininess: 60,
+            emissive: 0x051d28,
+            emissiveIntensity: 0.3
         });
 
-        // Add some variation to floor vertices for natural look
+        // Add more variation to floor vertices
         const floorPositions = floorGeometry.attributes.position;
         for (let i = 0; i < floorPositions.count; i++) {
-            const z = floorPositions.getZ(i);
-            floorPositions.setZ(i, z + (Math.random() - 0.5) * 0.5);
+            const x = floorPositions.getX(i);
+            const y = floorPositions.getY(i);
+            const variation = Math.sin(x * 0.3) * Math.cos(y * 0.3) * 0.8;
+            floorPositions.setZ(i, variation);
         }
         floorGeometry.computeVertexNormals();
 
@@ -97,19 +108,19 @@ export class Environment {
     }
 
     /**
-     * Creates lighting system with volumetric sun rays
+     * Creates enhanced lighting system with vibrant colors
      */
     createLighting() {
-        // Ambient underwater lighting
-        this.lights.ambient = new THREE.AmbientLight(0x4488aa, 0.5);
+        // Brighter ambient underwater lighting with color
+        this.lights.ambient = new THREE.AmbientLight(0x5599cc, 0.7); // Increased intensity
         this.scene.add(this.lights.ambient);
 
-        // Main sun light from above (through water surface opening)
-        this.lights.sun = new THREE.DirectionalLight(0x88ccff, 1.5);
+        // Main sun light with warmer color
+        this.lights.sun = new THREE.DirectionalLight(0xaaddff, 2.5); // Much brighter!
         this.lights.sun.position.set(0, 20, 0);
         this.lights.sun.castShadow = true;
 
-        // Configure shadow properties
+        // Enhanced shadow configuration
         this.lights.sun.shadow.mapSize.width = 2048;
         this.lights.sun.shadow.mapSize.height = 2048;
         this.lights.sun.shadow.camera.near = 0.5;
@@ -121,38 +132,49 @@ export class Environment {
 
         this.scene.add(this.lights.sun);
 
-        // Additional point lights for ambiance
-        const pointLight1 = new THREE.PointLight(0x66bbff, 0.5, 30);
-        pointLight1.position.set(10, 10, 10);
-        this.scene.add(pointLight1);
+        // Multiple colored point lights for whimsical atmosphere
+        const pointLightConfigs = [
+            { color: 0x66ddff, intensity: 1.2, position: [10, 12, 10] },
+            { color: 0x88ffaa, intensity: 1.0, position: [-10, 10, -10] },
+            { color: 0xffaa88, intensity: 0.8, position: [15, 8, -15] },
+            { color: 0xaa88ff, intensity: 0.9, position: [-15, 14, 15] },
+            { color: 0xffdd66, intensity: 0.7, position: [0, 15, 0] }
+        ];
 
-        const pointLight2 = new THREE.PointLight(0x66bbff, 0.5, 30);
-        pointLight2.position.set(-10, 10, -10);
-        this.scene.add(pointLight2);
+        pointLightConfigs.forEach(config => {
+            const light = new THREE.PointLight(config.color, config.intensity, 40);
+            light.position.set(...config.position);
+            this.scene.add(light);
+            this.lights.volumetric.push(light);
+        });
     }
 
     /**
-     * Creates the ceiling/water surface opening where light enters
+     * Creates enhanced water surface with shimmer effect
      */
     createCeiling() {
         const size = this.roomSize;
 
-        // Water surface plane with caustic shader
-        const surfaceGeometry = new THREE.PlaneGeometry(size * 0.6, size * 0.6, 30, 30);
+        // Water surface with more segments for detail
+        const surfaceGeometry = new THREE.PlaneGeometry(size * 0.7, size * 0.7, 50, 50);
         const surfaceMaterial = new THREE.MeshPhongMaterial({
-            color: 0x4499cc,
+            color: 0x66ccff,
             transparent: true,
-            opacity: 0.4,
+            opacity: 0.5,
             side: THREE.DoubleSide,
-            shininess: 100,
-            emissive: 0x224466,
-            emissiveIntensity: 0.3
+            shininess: 120,
+            emissive: 0x4499cc,
+            emissiveIntensity: 0.5,
+            specular: 0xffffff
         });
 
-        // Animate water surface vertices
+        // Create more complex initial wave pattern
         const positions = surfaceGeometry.attributes.position;
         for (let i = 0; i < positions.count; i++) {
-            positions.setZ(i, Math.sin(i * 0.5) * 0.3);
+            const x = positions.getX(i);
+            const y = positions.getY(i);
+            const wave = Math.sin(x * 0.3) * 0.4 + Math.cos(y * 0.3) * 0.4;
+            positions.setZ(i, wave);
         }
         surfaceGeometry.computeVertexNormals();
 
@@ -165,43 +187,59 @@ export class Environment {
     }
 
     /**
-     * Creates floating particle system (bubbles, dust)
+     * Creates colorful, magical particle system
      */
-    createParticles() {
-        const particleCount = 200;
+    createEnhancedParticles() {
+        const particleCount = 300; // Increased from 200
         const geometry = new THREE.BufferGeometry();
         const positions = [];
+        const colors = [];
         const velocities = [];
         const sizes = [];
 
+        // Color palette for whimsical particles
+        const colorPalette = [
+            new THREE.Color(0x88ddff), // Cyan
+            new THREE.Color(0xffaa88), // Coral
+            new THREE.Color(0xaaffdd), // Mint
+            new THREE.Color(0xffddaa), // Peach
+            new THREE.Color(0xdd88ff), // Purple
+            new THREE.Color(0xffff88)  // Yellow
+        ];
+
         for (let i = 0; i < particleCount; i++) {
-            // Random position within room
+            // Random position
             positions.push(
                 (Math.random() - 0.5) * this.roomSize * 0.8,
                 Math.random() * 18,
                 (Math.random() - 0.5) * this.roomSize * 0.8
             );
 
-            // Upward velocity with slight horizontal drift
+            // Colorful particles
+            const color = colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            colors.push(color.r, color.g, color.b);
+
+            // Upward velocity
             velocities.push(
-                (Math.random() - 0.5) * 0.02,
-                Math.random() * 0.05 + 0.02,
-                (Math.random() - 0.5) * 0.02
+                (Math.random() - 0.5) * 0.03,
+                Math.random() * 0.06 + 0.03,
+                (Math.random() - 0.5) * 0.03
             );
 
-            // Random sizes
-            sizes.push(Math.random() * 0.3 + 0.1);
+            // Varied sizes
+            sizes.push(Math.random() * 0.5 + 0.2);
         }
 
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
         geometry.setAttribute('velocity', new THREE.Float32BufferAttribute(velocities, 3));
         geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
 
         const material = new THREE.PointsMaterial({
-            color: 0xaaccff,
-            size: 0.3,
+            size: 0.5,
             transparent: true,
-            opacity: 0.6,
+            opacity: 0.8,
+            vertexColors: true,
             sizeAttenuation: true,
             blending: THREE.AdditiveBlending
         });
@@ -211,40 +249,46 @@ export class Environment {
     }
 
     /**
-     * Creates volumetric god rays using cone meshes
+     * Creates dramatic, more numerous god rays
      */
-    createGodRays() {
-        const rayCount = 5;
+    createDramaticGodRays() {
+        const rayCount = 12; // Increased from 5
 
         for (let i = 0; i < rayCount; i++) {
             const geometry = new THREE.ConeGeometry(
-                3 + Math.random() * 2, // radius
-                20, // height
-                8, // radial segments
+                2 + Math.random() * 3,  // Varied radius
+                22,                      // Longer rays
+                8,
                 1,
-                true // open ended
+                true
             );
 
+            // More vibrant ray colors
+            const colors = [0x88ddff, 0xaaffee, 0x99ccff, 0xbbddff, 0xccffff];
+            const color = colors[Math.floor(Math.random() * colors.length)];
+
             const material = new THREE.MeshBasicMaterial({
-                color: 0x88ccff,
+                color: color,
                 transparent: true,
-                opacity: 0.1,
+                opacity: 0.15, // Slightly more visible
                 side: THREE.DoubleSide,
                 blending: THREE.AdditiveBlending
             });
 
             const ray = new THREE.Mesh(geometry, material);
             ray.position.set(
-                (Math.random() - 0.5) * 15,
+                (Math.random() - 0.5) * 18,
                 19,
-                (Math.random() - 0.5) * 15
+                (Math.random() - 0.5) * 18
             );
             ray.rotation.x = Math.PI;
 
-            // Store initial rotation for animation
+            // Animation parameters
             ray.userData = {
                 initialRotation: Math.random() * Math.PI * 2,
-                rotationSpeed: (Math.random() - 0.5) * 0.1
+                rotationSpeed: (Math.random() - 0.5) * 0.15,
+                pulseSpeed: Math.random() * 2 + 1,
+                pulseOffset: Math.random() * Math.PI * 2
             };
 
             this.scene.add(ray);
@@ -253,23 +297,73 @@ export class Environment {
     }
 
     /**
-     * Update function called each frame
+     * Creates floating light orbs for magical atmosphere
+     */
+    createLightOrbs() {
+        const orbCount = 8;
+
+        for (let i = 0; i < orbCount; i++) {
+            const geometry = new THREE.SphereGeometry(0.3 + Math.random() * 0.3, 16, 16);
+
+            // Vibrant emissive colors
+            const colors = [0x88ddff, 0xff88dd, 0xddff88, 0x88ffdd, 0xffdd88];
+            const color = colors[i % colors.length];
+
+            const material = new THREE.MeshBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+
+            const orb = new THREE.Mesh(geometry, material);
+
+            // Random position
+            orb.position.set(
+                (Math.random() - 0.5) * 35,
+                Math.random() * 15 + 3,
+                (Math.random() - 0.5) * 35
+            );
+
+            // Movement parameters
+            orb.userData = {
+                initialPos: orb.position.clone(),
+                floatSpeed: Math.random() * 0.5 + 0.5,
+                floatRadius: Math.random() * 2 + 1,
+                floatOffset: Math.random() * Math.PI * 2
+            };
+
+            this.scene.add(orb);
+            this.lightOrbs.push(orb);
+        }
+    }
+
+    /**
+     * Update function with enhanced animations
      */
     update(deltaTime) {
         this.causticTime += deltaTime;
 
-        // Animate water surface
+        // Animate water surface with more complex waves
         if (this.waterSurface) {
             const positions = this.waterSurface.geometry.attributes.position;
             for (let i = 0; i < positions.count; i++) {
                 const x = positions.getX(i);
                 const y = positions.getY(i);
-                const wave = Math.sin(x * 0.5 + this.causticTime * 2) * 0.3 +
-                            Math.cos(y * 0.5 + this.causticTime * 1.5) * 0.3;
-                positions.setZ(i, wave);
+
+                // Multi-layered wave effect
+                const wave1 = Math.sin(x * 0.5 + this.causticTime * 2) * 0.4;
+                const wave2 = Math.cos(y * 0.5 + this.causticTime * 1.5) * 0.4;
+                const wave3 = Math.sin((x + y) * 0.3 + this.causticTime * 2.5) * 0.2;
+
+                positions.setZ(i, wave1 + wave2 + wave3);
             }
             positions.needsUpdate = true;
             this.waterSurface.geometry.computeVertexNormals();
+
+            // Pulse emissive intensity
+            this.waterSurface.material.emissiveIntensity =
+                0.4 + Math.sin(this.causticTime * 2) * 0.2;
         }
 
         // Animate particles
@@ -286,9 +380,13 @@ export class Environment {
                 const vy = velocities.getY(i);
                 const vz = velocities.getZ(i);
 
-                x += vx;
+                // Add swirl motion
+                const swirlX = Math.cos(this.causticTime + i) * 0.02;
+                const swirlZ = Math.sin(this.causticTime + i) * 0.02;
+
+                x += vx + swirlX;
                 y += vy;
-                z += vz;
+                z += vz + swirlZ;
 
                 // Reset particles that reach the top
                 if (y > 19) {
@@ -303,19 +401,49 @@ export class Environment {
             positions.needsUpdate = true;
         }
 
-        // Animate god rays
+        // Animate god rays with more dramatic movement
         this.godRays.forEach(ray => {
-            ray.rotation.y = ray.userData.initialRotation +
-                            Math.sin(this.causticTime + ray.userData.initialRotation) * 0.2;
+            const userData = ray.userData;
 
-            // Pulse opacity
-            ray.material.opacity = 0.05 + Math.sin(this.causticTime * 2 + ray.userData.initialRotation) * 0.05;
+            // Rotation
+            ray.rotation.y = userData.initialRotation +
+                            Math.sin(this.causticTime * userData.rotationSpeed) * 0.5;
+
+            // Pulsing opacity
+            const pulse = Math.sin(this.causticTime * userData.pulseSpeed + userData.pulseOffset);
+            ray.material.opacity = 0.08 + pulse * 0.08;
+
+            // Subtle scale animation
+            const scale = 1 + Math.sin(this.causticTime * userData.pulseSpeed) * 0.1;
+            ray.scale.set(scale, 1, scale);
         });
 
-        // Animate sun light for caustic effect
+        // Animate light orbs floating
+        this.lightOrbs.forEach((orb, index) => {
+            const userData = orb.userData;
+            const time = this.causticTime * userData.floatSpeed + userData.floatOffset;
+
+            orb.position.x = userData.initialPos.x + Math.sin(time) * userData.floatRadius;
+            orb.position.y = userData.initialPos.y + Math.cos(time * 0.5) * userData.floatRadius * 0.5;
+            orb.position.z = userData.initialPos.z + Math.cos(time) * userData.floatRadius;
+
+            // Pulse opacity
+            orb.material.opacity = 0.4 + Math.sin(this.causticTime * 2 + index) * 0.3;
+        });
+
+        // Animate sun light for caustic effect with more movement
         if (this.lights.sun) {
-            this.lights.sun.position.x = Math.sin(this.causticTime * 0.5) * 2;
-            this.lights.sun.position.z = Math.cos(this.causticTime * 0.5) * 2;
+            this.lights.sun.position.x = Math.sin(this.causticTime * 0.5) * 3;
+            this.lights.sun.position.z = Math.cos(this.causticTime * 0.5) * 3;
+
+            // Pulse intensity slightly
+            this.lights.sun.intensity = 2.3 + Math.sin(this.causticTime) * 0.3;
         }
+
+        // Animate point lights subtly
+        this.lights.volumetric.forEach((light, index) => {
+            const baseIntensity = [1.2, 1.0, 0.8, 0.9, 0.7][index];
+            light.intensity = baseIntensity + Math.sin(this.causticTime * 2 + index) * 0.2;
+        });
     }
 }
