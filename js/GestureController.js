@@ -173,7 +173,9 @@ export class GestureController {
         if (!this.enabled || !results.multiHandLandmarks) return;
 
         const now = Date.now();
-        if (now - this.lastGestureTime < this.gestureDebounce) return;
+
+        // Track gestures for both hands
+        const detectedGestures = [];
 
         // Process each detected hand
         results.multiHandLandmarks.forEach((landmarks, index) => {
@@ -181,11 +183,26 @@ export class GestureController {
             const gesture = this.recognizeGesture(landmarks, handedness);
 
             if (gesture) {
+                detectedGestures.push(gesture);
+            }
+        });
+
+        // Check for both palms gesture (requires both hands showing palms)
+        const leftPalm = detectedGestures.find(g => g.type === 'palm_left');
+        const rightPalm = detectedGestures.find(g => g.type === 'palm_right');
+
+        if (leftPalm && rightPalm && now - this.lastGestureTime >= this.gestureDebounce) {
+            this.lastGestureTime = now;
+            this.currentGesture = { type: 'both_palms', confidence: 0.9 };
+            this.onGestureDetected(this.currentGesture);
+        } else if (detectedGestures.length > 0 && now - this.lastGestureTime >= this.gestureDebounce) {
+            // Send individual gestures
+            detectedGestures.forEach(gesture => {
                 this.lastGestureTime = now;
                 this.currentGesture = gesture;
                 this.onGestureDetected(gesture);
-            }
-        });
+            });
+        }
 
         // Update status with hand count
         const handCount = results.multiHandLandmarks.length;

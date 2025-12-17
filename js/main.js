@@ -284,19 +284,26 @@ class UnderwaterExploration {
             case 'palm_right':
                 this.cameraController.rotateLeft(gesture.confidence);
                 break;
+            case 'both_palms':
+                // Both palms shown - attempt to open treasure chest
+                this.attemptChestInteraction();
+                break;
         }
     }
 
     attemptChestInteraction() {
         if (!this.treasureChest || this.treasureChest.isOpen) return;
 
-        // Check if camera is close enough to chest
+        // Check if camera is in the right range (close but not on top)
         const distance = this.camera.position.distanceTo(this.treasureChest.position);
 
-        if (distance < 8) {
+        if (distance >= 3 && distance < 8) {
+            // Perfect range - open chest!
             this.openTreasureChest();
+        } else if (distance < 3) {
+            this.showInteractionPrompt('Too close! Step back a bit and show both palms!', 2000);
         } else {
-            this.showInteractionPrompt('Move closer to the treasure chest!');
+            this.showInteractionPrompt('Move closer to the treasure chest!', 2000);
         }
     }
 
@@ -394,12 +401,16 @@ class UnderwaterExploration {
             // Update proximity visual feedback
             this.treasureChest.updateProximity(distance);
 
-            // Automatically open chest when player gets close enough
-            if (distance < 5) {
-                this.openTreasureChest();
-            } else if (distance < 8) {
-                // Show hint when in outer range
-                this.showInteractionPrompt('Get closer to discover the treasure!', 100);
+            // Show instructions based on distance
+            if (distance >= 3 && distance < 8) {
+                // In perfect range - show palm gesture instruction
+                this.showInteractionPrompt('Show BOTH palms to open the treasure!', 100);
+            } else if (distance < 3) {
+                // Too close
+                this.showInteractionPrompt('Too close! Step back a bit!', 100);
+            } else if (distance < 12) {
+                // Getting close
+                this.showInteractionPrompt('Getting closer...', 100);
             }
         }
     }
