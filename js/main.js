@@ -275,18 +275,15 @@ class UnderwaterExploration {
     onGestureDetected(gesture) {
         if (!this.isStarted || !this.gesturesEnabled) return;
 
-        // Note: Swapped rotation directions for intuitive control
-        // (left palm should turn left, right palm should turn right)
         switch (gesture.type) {
-            case 'palm_left':
-                this.cameraController.rotateRight(gesture.confidence);
-                break;
-            case 'palm_right':
-                this.cameraController.rotateLeft(gesture.confidence);
-                break;
             case 'both_palms':
                 // Both palms shown - attempt to open treasure chest
                 this.attemptChestInteraction();
+                break;
+            case 'palm_to_fist_left':
+            case 'palm_to_fist_right':
+                // Palm → fist transition triggers forward movement
+                this.cameraController.moveForward();
                 break;
         }
     }
@@ -372,6 +369,21 @@ class UnderwaterExploration {
 
     update(deltaTime) {
         if (!this.isStarted) return;
+
+        // Handle continuous gesture controls
+        if (this.gesturesEnabled && this.gestureController) {
+            const gestures = this.gestureController.getCurrentGestures();
+
+            // Continuous rotation based on palm gestures
+            if (gestures.leftHand?.type === 'palm_left') {
+                // Left palm → rotate right (camera turns to face right)
+                this.cameraController.rotateRight(1.0);
+            }
+            if (gestures.rightHand?.type === 'palm_right') {
+                // Right palm → rotate left (camera turns to face left)
+                this.cameraController.rotateLeft(1.0);
+            }
+        }
 
         // Update subsystems
         if (this.environment) {

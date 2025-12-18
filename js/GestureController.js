@@ -24,11 +24,18 @@ export class GestureController {
 
         // Gesture detection parameters - tuned for calm, non-twitchy feel
         this.gestureThreshold = 0.7; // Confidence threshold
-        this.gestureDebounce = 300; // ms between gesture detections
-        this.lastGestureTime = 0;
+        this.gestureDebounce = 300; // ms between discrete gesture events (both_palms)
+        this.lastDiscreteGestureTime = 0;
 
-        // Current gesture state
-        this.currentGesture = null;
+        // Current and previous gesture state for continuous tracking
+        this.currentGestures = {
+            leftHand: null,  // Current gesture for left hand
+            rightHand: null  // Current gesture for right hand
+        };
+        this.previousGestures = {
+            leftHand: null,
+            rightHand: null
+        };
     }
 
     /**
@@ -174,35 +181,38 @@ export class GestureController {
 
         const now = Date.now();
 
-        // Track gestures for both hands
-        const detectedGestures = [];
+        // Save previous gestures for transition detection
+        this.previousGestures.leftHand = this.currentGestures.leftHand;
+        this.previousGestures.rightHand = this.currentGestures.rightHand;
+
+        // Reset current gestures (will be set if hands detected)
+        this.currentGestures.leftHand = null;
+        this.currentGestures.rightHand = null;
 
         // Process each detected hand
         results.multiHandLandmarks.forEach((landmarks, index) => {
             const handedness = results.multiHandedness[index].label; // "Left" or "Right"
             const gesture = this.recognizeGesture(landmarks, handedness);
 
-            if (gesture) {
-                detectedGestures.push(gesture);
+            // Store current gesture state for each hand
+            if (handedness === 'Left') {
+                this.currentGestures.leftHand = gesture;
+            } else {
+                this.currentGestures.rightHand = gesture;
             }
         });
 
-        // Check for both palms gesture (requires both hands showing palms)
-        const leftPalm = detectedGestures.find(g => g.type === 'palm_left');
-        const rightPalm = detectedGestures.find(g => g.type === 'palm_right');
+        // Check for both palms gesture (discrete event for opening treasure)
+        const leftPalm = this.currentGestures.leftHand?.type === 'palm_left';
+        const rightPalm = this.currentGestures.rightHand?.type === 'palm_right';
 
-        if (leftPalm && rightPalm && now - this.lastGestureTime >= this.gestureDebounce) {
-            this.lastGestureTime = now;
-            this.currentGesture = { type: 'both_palms', confidence: 0.9 };
-            this.onGestureDetected(this.currentGesture);
-        } else if (detectedGestures.length > 0 && now - this.lastGestureTime >= this.gestureDebounce) {
-            // Send individual gestures
-            detectedGestures.forEach(gesture => {
-                this.lastGestureTime = now;
-                this.currentGesture = gesture;
-                this.onGestureDetected(gesture);
-            });
+        if (leftPalm && rightPalm && now - this.lastDiscreteGestureTime >= this.gestureDebounce) {
+            this.lastDiscreteGestureTime = now;
+            this.onGestureDetected({ type: 'both_palms', confidence: 0.9 });
         }
+
+        // Detect palm-to-fist transitions for forward movement
+        this.detectTransitions();
 
         // Update status with hand count
         const handCount = results.multiHandLandmarks.length;
@@ -214,6 +224,30 @@ export class GestureController {
     }
 
     /**
+     * Detect gesture transitions (e.g., palm → fist for forward movement)
+     */
+    detectTransitions() {
+        // Check left hand: palm → fist
+        if (this.previousGestures.leftHand?.type === 'palm_left' &&
+            this.currentGestures.leftHand?.type === 'fist_left') {
+            this.onGestureDetected({ type: 'palm_to_fist_left', confidence: 0.9 });
+        }
+
+        // Check right hand: palm → fist
+        if (this.previousGestures.rightHand?.type === 'palm_right' &&
+            this.currentGestures.rightHand?.type === 'fist_right') {
+            this.onGestureDetected({ type: 'palm_to_fist_right', confidence: 0.9 });
+        }
+    }
+
+    /**
+     * Get current gesture state (for continuous controls)
+     */
+    getCurrentGestures() {
+        return this.currentGestures;
+    }
+
+    /**
      * Recognize specific gestures from hand landmarks
      *
      * @param {Array} landmarks - MediaPipe hand landmarks
@@ -221,29 +255,26 @@ export class GestureController {
      * @returns {Object|null} - Gesture object or null
      */
     recognizeGesture(landmarks, handedness) {
-        // Check for pinch gesture first (higher priority)
-        const isPinching = this.isPinching(landmarks);
-        if (isPinching && handedness === 'Right') {
-            return {
-                type: 'pinch_right',
-                hand: handedness,
-                confidence: 0.9
-            };
-        }
-
         // Calculate if hand is open (palm) or closed (fist)
         const isOpen = this.isHandOpen(landmarks);
+        const isClosed = this.isHandClosed(landmarks);
         const isFacing = this.isPalmFacingCamera(landmarks);
-        const confidence = this.calculateGestureConfidence(landmarks, isOpen, isFacing);
-
-        if (confidence < this.gestureThreshold) return null;
 
         // Palm gestures (hand open, facing camera)
         if (isOpen && isFacing) {
             return {
                 type: handedness === 'Left' ? 'palm_left' : 'palm_right',
                 hand: handedness,
-                confidence: confidence
+                confidence: 0.9
+            };
+        }
+
+        // Fist gestures (hand closed)
+        if (isClosed) {
+            return {
+                type: handedness === 'Left' ? 'fist_left' : 'fist_right',
+                hand: handedness,
+                confidence: 0.9
             };
         }
 
@@ -276,6 +307,34 @@ export class GestureController {
 
         // Hand is open if at least 3 fingers are extended
         return extendedCount >= 3;
+    }
+
+    /**
+     * Determine if hand is closed (fist) based on finger curl
+     */
+    isHandClosed(landmarks) {
+        // Check if fingers are curled by comparing tip to knuckle distances
+        const fingerTips = [8, 12, 16, 20]; // Index, middle, ring, pinky
+        const fingerKnuckles = [5, 9, 13, 17];
+        const wrist = landmarks[0];
+
+        let curledCount = 0;
+
+        for (let i = 0; i < fingerTips.length; i++) {
+            const tip = landmarks[fingerTips[i]];
+            const knuckle = landmarks[fingerKnuckles[i]];
+
+            const tipDistance = this.distance3D(tip, wrist);
+            const knuckleDistance = this.distance3D(knuckle, wrist);
+
+            // Finger is curled if tip is closer to wrist than knuckle (or similar distance)
+            if (tipDistance <= knuckleDistance * 1.15) {
+                curledCount++;
+            }
+        }
+
+        // Hand is closed if all 4 fingers are curled
+        return curledCount >= 4;
     }
 
     /**
