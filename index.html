@@ -15,6 +15,11 @@
         <!-- Webcam video (hidden, used for gesture tracking) -->
         <video id="webcam" autoplay playsinline></video>
 
+        <!-- Background music -->
+        <audio id="background-music" loop preload="auto">
+            <source src="audio/background-music.mp3" type="audio/mpeg">
+        </audio>
+
         <!-- Mini-map viewport -->
         <div id="minimap-container">
             <canvas id="minimap"></canvas>
@@ -75,6 +80,9 @@
 
         <!-- Settings panel -->
         <div id="settings-panel">
+            <button id="toggle-music" class="control-btn">
+                <span id="music-icon">🎵</span> Music: <span id="music-toggle-text">ON</span>
+            </button>
             <button id="toggle-gestures" class="control-btn">
                 <span id="gesture-icon">👋</span> Gestures: <span id="gesture-toggle-text">ON</span>
             </button>
