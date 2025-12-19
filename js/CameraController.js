@@ -12,7 +12,7 @@ export class CameraController {
         this.scene = scene;
 
         // Movement parameters - tuned for slow, fluid underwater feel
-        this.moveSpeed = 3.0; // Units per second
+        this.moveSpeed = 1.0; // Units per second (very slow, dreamlike)
         this.rotateSpeed = 1.2; // Radians per second
         this.dampingFactor = 0.85; // Smooth deceleration
 

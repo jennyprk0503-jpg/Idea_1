@@ -409,8 +409,8 @@ export class Environment {
             metalness: 0.0
         });
 
-        // Furniture scale multiplier (3x larger - 2x * 1.5)
-        const furnitureScale = 3.0;
+        // Furniture scale multiplier (2x larger - perfect size)
+        const furnitureScale = 2.0;
 
         // Create Couch
         const couch = this.createCouch(woodMaterial, fabricMaterial);
