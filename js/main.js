@@ -356,15 +356,53 @@ class UnderwaterExploration {
     getRandomTreasurePosition() {
         // Place treasure somewhere in the room, but not too close to start position
         const roomSize = 50;
-        const minDistance = 15;
+        const minDistanceFromStart = 15;
+        const minDistanceFromFurniture = 5; // Minimum distance from any furniture
+        const treasureRadius = 2; // Approximate size of treasure chest
 
-        let x, z;
+        // Get furniture collision data
+        const furnitureData = this.environment.getFurnitureCollisionData();
+
+        let x, z, position;
+        let attempts = 0;
+        const maxAttempts = 100;
+
         do {
             x = (Math.random() - 0.5) * (roomSize - 10);
             z = (Math.random() - 0.5) * (roomSize - 10);
-        } while (Math.sqrt(x * x + z * z) < minDistance);
+            position = new THREE.Vector3(x, 0, z);
+            attempts++;
 
-        return new THREE.Vector3(x, 0, z);
+            // Check distance from start position
+            const distanceFromStart = Math.sqrt(x * x + z * z);
+            if (distanceFromStart < minDistanceFromStart) {
+                continue;
+            }
+
+            // Check distance from all furniture
+            let tooCloseToFurniture = false;
+            for (const furniture of furnitureData) {
+                const distance = position.distanceTo(furniture.position);
+                if (distance < (furniture.radius + treasureRadius + minDistanceFromFurniture)) {
+                    tooCloseToFurniture = true;
+                    break;
+                }
+            }
+
+            // If we found a good spot, break out
+            if (!tooCloseToFurniture) {
+                break;
+            }
+
+            // Prevent infinite loop
+            if (attempts >= maxAttempts) {
+                console.warn('Could not find ideal treasure position after', maxAttempts, 'attempts. Using best attempt.');
+                break;
+            }
+
+        } while (true);
+
+        return position;
     }
 
     updateLoadingStatus(message, progress) {

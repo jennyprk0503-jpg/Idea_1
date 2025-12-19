@@ -1085,6 +1085,32 @@ export class Environment {
     }
 
     /**
+     * Get furniture positions and approximate sizes for collision detection
+     * Returns array of objects with {position: Vector3, radius: number}
+     */
+    getFurnitureCollisionData() {
+        if (!this.furniture || this.furniture.length === 0) {
+            return [];
+        }
+
+        return this.furniture.map(item => {
+            // Get the furniture's world position
+            const position = item.position.clone();
+
+            // Estimate collision radius based on scale
+            // Most furniture is roughly 3-5 units at base scale, scaled by furnitureScale (1.33)
+            const baseSize = 3; // Base furniture size estimate
+            const scale = item.scale.x || 1.33; // Get actual scale
+            const radius = baseSize * scale;
+
+            return {
+                position: position,
+                radius: radius
+            };
+        });
+    }
+
+    /**
      * Update function with enhanced animations
      */
     update(deltaTime) {
