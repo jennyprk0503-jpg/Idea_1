@@ -111,7 +111,7 @@ export class MiniMap {
         const arrowLength = 12;
 
         const dirX = Math.sin(rotation) * arrowLength;
-        const dirY = Math.cos(rotation) * arrowLength;
+        const dirY = -Math.cos(rotation) * arrowLength; // Negative to match canvas Y-axis
 
         this.ctx.strokeStyle = this.colors.playerDirection;
         this.ctx.lineWidth = 2;
@@ -129,12 +129,12 @@ export class MiniMap {
         this.ctx.moveTo(pos.x + dirX, pos.y + dirY);
         this.ctx.lineTo(
             pos.x + dirX + Math.sin(angle1) * arrowHeadSize,
-            pos.y + dirY + Math.cos(angle1) * arrowHeadSize
+            pos.y + dirY + -Math.cos(angle1) * arrowHeadSize // Negative for canvas Y-axis
         );
         this.ctx.moveTo(pos.x + dirX, pos.y + dirY);
         this.ctx.lineTo(
             pos.x + dirX + Math.sin(angle2) * arrowHeadSize,
-            pos.y + dirY + Math.cos(angle2) * arrowHeadSize
+            pos.y + dirY + -Math.cos(angle2) * arrowHeadSize // Negative for canvas Y-axis
         );
         this.ctx.stroke();
 
