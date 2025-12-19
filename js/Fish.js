@@ -13,7 +13,7 @@
  * Single Fish Entity
  */
 class Fish {
-    constructor(scene, startPosition) {
+    constructor(scene, startPosition, fishType = null) {
         this.scene = scene;
         this.position = startPosition.clone();
         this.velocity = new THREE.Vector3(
@@ -22,6 +22,9 @@ class Fish {
             (Math.random() - 0.5) * 2
         );
         this.acceleration = new THREE.Vector3();
+
+        // Fish type (1, 2, or 3 for different shapes)
+        this.fishType = fishType || (Math.floor(Math.random() * 3) + 1);
 
         // Fish properties
         this.maxSpeed = 2 + Math.random() * 2;
@@ -42,9 +45,28 @@ class Fish {
     }
 
     /**
-     * Create realistic fish geometry with scale pattern
+     * Create fish mesh based on type
      */
     createMesh() {
+        switch (this.fishType) {
+            case 1:
+                this.createType1Mesh(); // Elongated fish
+                break;
+            case 2:
+                this.createType2Mesh(); // Round/pufferfish
+                break;
+            case 3:
+                this.createType3Mesh(); // Flat/wide fish
+                break;
+            default:
+                this.createType1Mesh();
+        }
+    }
+
+    /**
+     * Type 1: Elongated tropical fish (current design)
+     */
+    createType1Mesh() {
         const group = new THREE.Group();
 
         // Create scale pattern texture
@@ -179,6 +201,302 @@ class Fish {
 
         const highlightRight = new THREE.Mesh(highlightGeometry, highlightMaterial);
         highlightRight.position.set(this.size * 1.05, this.size * 0.3, -this.size * 0.38);
+        group.add(highlightRight);
+
+        this.mesh = group;
+        this.mesh.position.copy(this.position);
+        this.scene.add(this.mesh);
+    }
+
+    /**
+     * Type 2: Round pufferfish-style
+     */
+    createType2Mesh() {
+        const group = new THREE.Group();
+
+        // Create scale pattern texture
+        const scaleTexture = this.createScaleTexture();
+
+        // Body - more spherical/round
+        const bodyGeometry = new THREE.SphereGeometry(this.size, 16, 16);
+        bodyGeometry.scale(1.3, 1.1, 1.0); // More rounded, slightly wider
+
+        const bodyMaterial = new THREE.MeshPhongMaterial({
+            color: this.color,
+            shininess: 100,
+            flatShading: false,
+            emissive: this.color,
+            emissiveIntensity: 0.35,
+            specular: 0xffffff,
+            map: scaleTexture,
+            bumpMap: scaleTexture,
+            bumpScale: 0.03
+        });
+
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        group.add(body);
+        this.body = body;
+
+        // Smaller, rounded tail fin
+        const tailShape = new THREE.Shape();
+        tailShape.moveTo(0, 0);
+        tailShape.quadraticCurveTo(-this.size * 0.5, -this.size * 0.4, -this.size * 0.7, -this.size * 0.3);
+        tailShape.lineTo(-this.size * 0.6, 0);
+        tailShape.lineTo(-this.size * 0.7, this.size * 0.3);
+        tailShape.quadraticCurveTo(-this.size * 0.5, this.size * 0.4, 0, 0);
+
+        const tailGeometry = new THREE.ShapeGeometry(tailShape);
+        const tailMaterial = new THREE.MeshPhongMaterial({
+            color: this.color,
+            shininess: 80,
+            flatShading: false,
+            emissive: this.color,
+            emissiveIntensity: 0.3,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.9
+        });
+
+        const tail = new THREE.Mesh(tailGeometry, tailMaterial);
+        tail.position.x = -this.size * 0.9;
+        group.add(tail);
+        this.tail = tail;
+
+        // Small dorsal fin (top)
+        const dorsalShape = new THREE.Shape();
+        dorsalShape.moveTo(0, 0);
+        dorsalShape.quadraticCurveTo(-this.size * 0.2, this.size * 0.35, -this.size * 0.3, this.size * 0.3);
+        dorsalShape.lineTo(-this.size * 0.25, 0);
+        dorsalShape.lineTo(0, 0);
+
+        const dorsalGeometry = new THREE.ShapeGeometry(dorsalShape);
+        const dorsalMaterial = new THREE.MeshPhongMaterial({
+            color: this.color,
+            shininess: 80,
+            flatShading: false,
+            emissive: this.color,
+            emissiveIntensity: 0.25,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.85
+        });
+
+        const dorsalFin = new THREE.Mesh(dorsalGeometry, dorsalMaterial);
+        dorsalFin.position.set(-this.size * 0.1, this.size * 0.6, 0);
+        dorsalFin.rotation.x = Math.PI / 2;
+        group.add(dorsalFin);
+
+        // Small side fins
+        const pectoralShape = new THREE.Shape();
+        pectoralShape.moveTo(0, 0);
+        pectoralShape.quadraticCurveTo(this.size * 0.25, this.size * 0.25, this.size * 0.4, this.size * 0.15);
+        pectoralShape.lineTo(this.size * 0.25, 0);
+        pectoralShape.lineTo(0, 0);
+
+        const pectoralGeometry = new THREE.ShapeGeometry(pectoralShape);
+        const pectoralMaterial = new THREE.MeshPhongMaterial({
+            color: this.color,
+            shininess: 80,
+            flatShading: false,
+            emissive: this.color,
+            emissiveIntensity: 0.25,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        const pectoralLeft = new THREE.Mesh(pectoralGeometry, pectoralMaterial);
+        pectoralLeft.position.set(this.size * 0.3, 0, this.size * 0.5);
+        pectoralLeft.rotation.y = -Math.PI / 6;
+        group.add(pectoralLeft);
+
+        const pectoralRight = new THREE.Mesh(pectoralGeometry, pectoralMaterial);
+        pectoralRight.position.set(this.size * 0.3, 0, -this.size * 0.5);
+        pectoralRight.rotation.y = Math.PI / 6;
+        group.add(pectoralRight);
+
+        // Large eyes (characteristic of round fish)
+        const eyeGeometry = new THREE.SphereGeometry(this.size * 0.2, 12, 12);
+        const eyeMaterial = new THREE.MeshPhongMaterial({
+            color: 0x000000,
+            shininess: 150,
+            emissive: 0x333333,
+            emissiveIntensity: 0.4
+        });
+
+        const eyeLeft = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        eyeLeft.position.set(this.size * 0.8, this.size * 0.3, this.size * 0.4);
+        group.add(eyeLeft);
+
+        const eyeRight = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        eyeRight.position.set(this.size * 0.8, this.size * 0.3, -this.size * 0.4);
+        group.add(eyeRight);
+
+        // Eye highlights
+        const highlightGeometry = new THREE.SphereGeometry(this.size * 0.08, 8, 8);
+        const highlightMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.95
+        });
+
+        const highlightLeft = new THREE.Mesh(highlightGeometry, highlightMaterial);
+        highlightLeft.position.set(this.size * 0.88, this.size * 0.36, this.size * 0.44);
+        group.add(highlightLeft);
+
+        const highlightRight = new THREE.Mesh(highlightGeometry, highlightMaterial);
+        highlightRight.position.set(this.size * 0.88, this.size * 0.36, -this.size * 0.44);
+        group.add(highlightRight);
+
+        this.mesh = group;
+        this.mesh.position.copy(this.position);
+        this.scene.add(this.mesh);
+    }
+
+    /**
+     * Type 3: Flat/wide fish (like a butterflyfish)
+     */
+    createType3Mesh() {
+        const group = new THREE.Group();
+
+        // Create scale pattern texture
+        const scaleTexture = this.createScaleTexture();
+
+        // Body - flat and wide
+        const bodyGeometry = new THREE.SphereGeometry(this.size, 16, 12);
+        bodyGeometry.scale(1.5, 1.2, 0.4); // Wide and flat
+
+        const bodyMaterial = new THREE.MeshPhongMaterial({
+            color: this.color,
+            shininess: 85,
+            flatShading: false,
+            emissive: this.color,
+            emissiveIntensity: 0.3,
+            specular: 0xffffff,
+            map: scaleTexture,
+            bumpMap: scaleTexture,
+            bumpScale: 0.02
+        });
+
+        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+        group.add(body);
+        this.body = body;
+
+        // Wide, triangular tail
+        const tailShape = new THREE.Shape();
+        tailShape.moveTo(0, 0);
+        tailShape.lineTo(-this.size * 0.8, -this.size * 0.7);
+        tailShape.lineTo(-this.size * 0.7, 0);
+        tailShape.lineTo(-this.size * 0.8, this.size * 0.7);
+        tailShape.lineTo(0, 0);
+
+        const tailGeometry = new THREE.ShapeGeometry(tailShape);
+        const tailMaterial = new THREE.MeshPhongMaterial({
+            color: this.color,
+            shininess: 75,
+            flatShading: false,
+            emissive: this.color,
+            emissiveIntensity: 0.25,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.9
+        });
+
+        const tail = new THREE.Mesh(tailGeometry, tailMaterial);
+        tail.position.x = -this.size * 1.1;
+        group.add(tail);
+        this.tail = tail;
+
+        // Large dorsal fin (top) - characteristic of flat fish
+        const dorsalShape = new THREE.Shape();
+        dorsalShape.moveTo(0, 0);
+        dorsalShape.quadraticCurveTo(-this.size * 0.4, this.size * 0.7, -this.size * 0.7, this.size * 0.6);
+        dorsalShape.lineTo(-this.size * 0.6, 0);
+        dorsalShape.lineTo(0, 0);
+
+        const dorsalGeometry = new THREE.ShapeGeometry(dorsalShape);
+        const dorsalMaterial = new THREE.MeshPhongMaterial({
+            color: this.color,
+            shininess: 75,
+            flatShading: false,
+            emissive: this.color,
+            emissiveIntensity: 0.2,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.85
+        });
+
+        const dorsalFin = new THREE.Mesh(dorsalGeometry, dorsalMaterial);
+        dorsalFin.position.set(-this.size * 0.3, this.size * 0.7, 0);
+        dorsalFin.rotation.x = Math.PI / 2;
+        group.add(dorsalFin);
+
+        // Ventral fin (bottom) for flat fish
+        const ventralFin = new THREE.Mesh(dorsalGeometry, dorsalMaterial);
+        ventralFin.position.set(-this.size * 0.3, -this.size * 0.7, 0);
+        ventralFin.rotation.x = -Math.PI / 2;
+        group.add(ventralFin);
+
+        // Small pectoral fins
+        const pectoralShape = new THREE.Shape();
+        pectoralShape.moveTo(0, 0);
+        pectoralShape.quadraticCurveTo(this.size * 0.2, this.size * 0.2, this.size * 0.35, this.size * 0.15);
+        pectoralShape.lineTo(this.size * 0.2, 0);
+        pectoralShape.lineTo(0, 0);
+
+        const pectoralGeometry = new THREE.ShapeGeometry(pectoralShape);
+        const pectoralMaterial = new THREE.MeshPhongMaterial({
+            color: this.color,
+            shininess: 75,
+            flatShading: false,
+            emissive: this.color,
+            emissiveIntensity: 0.2,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: 0.8
+        });
+
+        const pectoralLeft = new THREE.Mesh(pectoralGeometry, pectoralMaterial);
+        pectoralLeft.position.set(this.size * 0.4, 0, this.size * 0.25);
+        pectoralLeft.rotation.y = -Math.PI / 3;
+        group.add(pectoralLeft);
+
+        const pectoralRight = new THREE.Mesh(pectoralGeometry, pectoralMaterial);
+        pectoralRight.position.set(this.size * 0.4, 0, -this.size * 0.25);
+        pectoralRight.rotation.y = Math.PI / 3;
+        group.add(pectoralRight);
+
+        // Medium-sized eyes
+        const eyeGeometry = new THREE.SphereGeometry(this.size * 0.18, 12, 12);
+        const eyeMaterial = new THREE.MeshPhongMaterial({
+            color: 0x000000,
+            shininess: 150,
+            emissive: 0x222222,
+            emissiveIntensity: 0.3
+        });
+
+        const eyeLeft = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        eyeLeft.position.set(this.size * 0.9, this.size * 0.4, this.size * 0.25);
+        group.add(eyeLeft);
+
+        const eyeRight = new THREE.Mesh(eyeGeometry, eyeMaterial);
+        eyeRight.position.set(this.size * 0.9, this.size * 0.4, -this.size * 0.25);
+        group.add(eyeRight);
+
+        // Eye highlights
+        const highlightGeometry = new THREE.SphereGeometry(this.size * 0.07, 8, 8);
+        const highlightMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.9
+        });
+
+        const highlightLeft = new THREE.Mesh(highlightGeometry, highlightMaterial);
+        highlightLeft.position.set(this.size * 0.98, this.size * 0.45, this.size * 0.28);
+        group.add(highlightLeft);
+
+        const highlightRight = new THREE.Mesh(highlightGeometry, highlightMaterial);
+        highlightRight.position.set(this.size * 0.98, this.size * 0.45, -this.size * 0.28);
         group.add(highlightRight);
 
         this.mesh = group;

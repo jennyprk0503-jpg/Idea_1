@@ -429,6 +429,44 @@ export class Environment {
         drawer.rotation.y = Math.PI / 3;
         this.scene.add(drawer);
         this.furniture.push(drawer);
+
+        // Create Bookshelf
+        const bookshelf = this.createBookshelf(woodMaterial);
+        bookshelf.position.set(18, 0, 12);
+        bookshelf.rotation.y = -Math.PI / 2;
+        this.scene.add(bookshelf);
+        this.furniture.push(bookshelf);
+
+        // Create Coffee Table
+        const coffeeTable = this.createCoffeeTable(woodMaterial);
+        coffeeTable.position.set(-10, 0, -10);
+        this.scene.add(coffeeTable);
+        this.furniture.push(coffeeTable);
+
+        // Create Armchair
+        const armchair = this.createArmchair(woodMaterial, fabricMaterial);
+        armchair.position.set(10, 0, 8);
+        armchair.rotation.y = Math.PI / 4;
+        this.scene.add(armchair);
+        this.furniture.push(armchair);
+
+        // Create Floor Lamp
+        const lamp = this.createFloorLamp(woodMaterial);
+        lamp.position.set(-18, 0, -5);
+        this.scene.add(lamp);
+        this.furniture.push(lamp);
+
+        // Create Side Table
+        const sideTable = this.createSideTable(woodMaterial);
+        sideTable.position.set(5, 0, -15);
+        this.scene.add(sideTable);
+        this.furniture.push(sideTable);
+
+        // Create Rug
+        const rug = this.createRug();
+        rug.position.set(0, 0.05, 0);
+        this.scene.add(rug);
+        this.furniture.push(rug);
     }
 
     /**
@@ -588,6 +626,219 @@ export class Environment {
         });
 
         return drawerGroup;
+    }
+
+    /**
+     * Create a bookshelf mesh
+     */
+    createBookshelf(woodMaterial) {
+        const bookshelfGroup = new THREE.Group();
+
+        // Main frame
+        const frameGeometry = new THREE.BoxGeometry(3, 4, 0.8);
+        const frame = new THREE.Mesh(frameGeometry, woodMaterial);
+        frame.position.y = 2;
+        frame.castShadow = true;
+        frame.receiveShadow = true;
+        bookshelfGroup.add(frame);
+
+        // Shelves
+        const shelfGeometry = new THREE.BoxGeometry(2.8, 0.1, 0.75);
+        const shelfPositions = [0.5, 1.5, 2.5, 3.5];
+
+        shelfPositions.forEach(y => {
+            const shelf = new THREE.Mesh(shelfGeometry, woodMaterial);
+            shelf.position.y = y;
+            bookshelfGroup.add(shelf);
+        });
+
+        // Books (simplified as colored boxes)
+        const bookColors = [0x8b4513, 0x2e5c6e, 0x4a5f3a, 0x6b3a5f, 0x5f4a3a];
+        shelfPositions.forEach(shelfY => {
+            for (let i = 0; i < 5; i++) {
+                const bookGeometry = new THREE.BoxGeometry(0.15, 0.6, 0.4);
+                const bookMaterial = new THREE.MeshStandardMaterial({
+                    color: bookColors[i],
+                    roughness: 0.9,
+                    metalness: 0.0
+                });
+                const book = new THREE.Mesh(bookGeometry, bookMaterial);
+                book.position.set(-1.2 + i * 0.5, shelfY + 0.35, 0);
+                bookshelfGroup.add(book);
+            }
+        });
+
+        return bookshelfGroup;
+    }
+
+    /**
+     * Create a coffee table mesh
+     */
+    createCoffeeTable(woodMaterial) {
+        const tableGroup = new THREE.Group();
+
+        // Table top
+        const topGeometry = new THREE.BoxGeometry(3, 0.15, 2);
+        const top = new THREE.Mesh(topGeometry, woodMaterial);
+        top.position.y = 0.8;
+        top.castShadow = true;
+        top.receiveShadow = true;
+        tableGroup.add(top);
+
+        // Legs
+        const legGeometry = new THREE.BoxGeometry(0.15, 0.8, 0.15);
+        const legPositions = [
+            [-1.3, 0.4, 0.85],
+            [1.3, 0.4, 0.85],
+            [-1.3, 0.4, -0.85],
+            [1.3, 0.4, -0.85]
+        ];
+
+        legPositions.forEach(pos => {
+            const leg = new THREE.Mesh(legGeometry, woodMaterial);
+            leg.position.set(...pos);
+            leg.castShadow = true;
+            tableGroup.add(leg);
+        });
+
+        return tableGroup;
+    }
+
+    /**
+     * Create an armchair mesh
+     */
+    createArmchair(woodMaterial, fabricMaterial) {
+        const chairGroup = new THREE.Group();
+
+        // Seat
+        const seatGeometry = new THREE.BoxGeometry(1.5, 0.6, 1.5);
+        const seat = new THREE.Mesh(seatGeometry, fabricMaterial);
+        seat.position.y = 0.8;
+        seat.castShadow = true;
+        chairGroup.add(seat);
+
+        // Backrest
+        const backrestGeometry = new THREE.BoxGeometry(1.5, 1.5, 0.3);
+        const backrest = new THREE.Mesh(backrestGeometry, fabricMaterial);
+        backrest.position.set(0, 1.65, -0.6);
+        backrest.castShadow = true;
+        chairGroup.add(backrest);
+
+        // Armrests
+        const armrestGeometry = new THREE.BoxGeometry(0.3, 0.8, 1.2);
+        const leftArmrest = new THREE.Mesh(armrestGeometry, fabricMaterial);
+        leftArmrest.position.set(-0.9, 1.2, 0);
+        leftArmrest.castShadow = true;
+        chairGroup.add(leftArmrest);
+
+        const rightArmrest = leftArmrest.clone();
+        rightArmrest.position.x = 0.9;
+        chairGroup.add(rightArmrest);
+
+        // Legs
+        const legGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.5);
+        const legPositions = [
+            [-0.6, 0.25, 0.6],
+            [0.6, 0.25, 0.6],
+            [-0.6, 0.25, -0.6],
+            [0.6, 0.25, -0.6]
+        ];
+
+        legPositions.forEach(pos => {
+            const leg = new THREE.Mesh(legGeometry, woodMaterial);
+            leg.position.set(...pos);
+            leg.castShadow = true;
+            chairGroup.add(leg);
+        });
+
+        return chairGroup;
+    }
+
+    /**
+     * Create a floor lamp mesh
+     */
+    createFloorLamp(woodMaterial) {
+        const lampGroup = new THREE.Group();
+
+        // Base
+        const baseGeometry = new THREE.CylinderGeometry(0.3, 0.4, 0.15);
+        const base = new THREE.Mesh(baseGeometry, woodMaterial);
+        base.position.y = 0.075;
+        base.castShadow = true;
+        lampGroup.add(base);
+
+        // Pole
+        const poleGeometry = new THREE.CylinderGeometry(0.06, 0.06, 3);
+        const pole = new THREE.Mesh(poleGeometry, woodMaterial);
+        pole.position.y = 1.5;
+        pole.castShadow = true;
+        lampGroup.add(pole);
+
+        // Lampshade
+        const shadeGeometry = new THREE.ConeGeometry(0.5, 0.8, 8);
+        const shadeMaterial = new THREE.MeshStandardMaterial({
+            color: 0xf0e6d2,
+            roughness: 0.8,
+            metalness: 0.0,
+            emissive: 0xfff4e0,
+            emissiveIntensity: 0.2
+        });
+        const shade = new THREE.Mesh(shadeGeometry, shadeMaterial);
+        shade.position.y = 3.4;
+        lampGroup.add(shade);
+
+        return lampGroup;
+    }
+
+    /**
+     * Create a side table mesh
+     */
+    createSideTable(woodMaterial) {
+        const tableGroup = new THREE.Group();
+
+        // Table top
+        const topGeometry = new THREE.CylinderGeometry(0.6, 0.6, 0.1);
+        const top = new THREE.Mesh(topGeometry, woodMaterial);
+        top.position.y = 1.2;
+        top.castShadow = true;
+        top.receiveShadow = true;
+        tableGroup.add(top);
+
+        // Legs
+        const legGeometry = new THREE.CylinderGeometry(0.06, 0.06, 1.2);
+        const legPositions = [
+            [-0.4, 0.6, 0.4],
+            [0.4, 0.6, 0.4],
+            [-0.4, 0.6, -0.4],
+            [0.4, 0.6, -0.4]
+        ];
+
+        legPositions.forEach(pos => {
+            const leg = new THREE.Mesh(legGeometry, woodMaterial);
+            leg.position.set(...pos);
+            leg.castShadow = true;
+            tableGroup.add(leg);
+        });
+
+        return tableGroup;
+    }
+
+    /**
+     * Create a rug mesh
+     */
+    createRug() {
+        const rugGeometry = new THREE.PlaneGeometry(8, 6);
+        const rugMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8b3a3a,
+            roughness: 1.0,
+            metalness: 0.0,
+            side: THREE.DoubleSide
+        });
+        const rug = new THREE.Mesh(rugGeometry, rugMaterial);
+        rug.rotation.x = -Math.PI / 2;
+        rug.receiveShadow = true;
+
+        return rug;
     }
 
     /**
