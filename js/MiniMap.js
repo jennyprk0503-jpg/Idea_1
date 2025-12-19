@@ -107,7 +107,7 @@ export class MiniMap {
         this.ctx.fill();
 
         // Direction indicator (arrow)
-        const rotation = this.camera.rotation.y;
+        const rotation = this.camera.rotation.y + Math.PI; // Add PI to flip 180 degrees
         const arrowLength = 12;
 
         const dirX = Math.sin(rotation) * arrowLength;
