@@ -409,8 +409,8 @@ export class Environment {
             metalness: 0.0
         });
 
-        // Furniture scale multiplier (2x larger)
-        const furnitureScale = 2.0;
+        // Furniture scale multiplier (3x larger - 2x * 1.5)
+        const furnitureScale = 3.0;
 
         // Create Couch
         const couch = this.createCouch(woodMaterial, fabricMaterial);
@@ -479,6 +479,50 @@ export class Environment {
         rug.position.set(0, 0.05, 0);
         this.scene.add(rug);
         this.furniture.push(rug);
+
+        // Create Bed
+        const bed = this.createBed(woodMaterial, fabricMaterial);
+        bed.scale.setScalar(furnitureScale);
+        bed.position.set(-20, 0, 0);
+        bed.rotation.y = Math.PI / 2;
+        this.scene.add(bed);
+        this.furniture.push(bed);
+
+        // Create Nightstand
+        const nightstand = this.createNightstand(woodMaterial);
+        nightstand.scale.setScalar(furnitureScale);
+        nightstand.position.set(-20, 0, -8);
+        this.scene.add(nightstand);
+        this.furniture.push(nightstand);
+
+        // Create TV Stand
+        const tvStand = this.createTVStand(woodMaterial);
+        tvStand.scale.setScalar(furnitureScale);
+        tvStand.position.set(0, 0, -20);
+        this.scene.add(tvStand);
+        this.furniture.push(tvStand);
+
+        // Create Plant
+        const plant = this.createPlant();
+        plant.scale.setScalar(furnitureScale);
+        plant.position.set(15, 0, 15);
+        this.scene.add(plant);
+        this.furniture.push(plant);
+
+        // Create Ottoman
+        const ottoman = this.createOttoman(fabricMaterial);
+        ottoman.scale.setScalar(furnitureScale);
+        ottoman.position.set(0, 0, -5);
+        this.scene.add(ottoman);
+        this.furniture.push(ottoman);
+
+        // Create second Armchair
+        const armchair2 = this.createArmchair(woodMaterial, fabricMaterial);
+        armchair2.scale.setScalar(furnitureScale);
+        armchair2.position.set(12, 0, -5);
+        armchair2.rotation.y = -Math.PI / 6;
+        this.scene.add(armchair2);
+        this.furniture.push(armchair2);
     }
 
     /**
@@ -851,6 +895,193 @@ export class Environment {
         rug.receiveShadow = true;
 
         return rug;
+    }
+
+    /**
+     * Create a bed mesh
+     */
+    createBed(woodMaterial, fabricMaterial) {
+        const bedGroup = new THREE.Group();
+
+        // Mattress
+        const mattressGeometry = new THREE.BoxGeometry(4, 0.6, 5);
+        const mattress = new THREE.Mesh(mattressGeometry, fabricMaterial);
+        mattress.position.y = 1.2;
+        mattress.castShadow = true;
+        mattress.receiveShadow = true;
+        bedGroup.add(mattress);
+
+        // Pillow
+        const pillowGeometry = new THREE.BoxGeometry(3, 0.3, 1);
+        const pillowMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            roughness: 0.95,
+            metalness: 0.0
+        });
+        const pillow = new THREE.Mesh(pillowGeometry, pillowMaterial);
+        pillow.position.set(0, 1.65, -1.7);
+        pillow.castShadow = true;
+        bedGroup.add(pillow);
+
+        // Bed frame
+        const frameGeometry = new THREE.BoxGeometry(4.2, 0.8, 5.2);
+        const frame = new THREE.Mesh(frameGeometry, woodMaterial);
+        frame.position.y = 0.6;
+        frame.castShadow = true;
+        bedGroup.add(frame);
+
+        // Headboard
+        const headboardGeometry = new THREE.BoxGeometry(4.2, 2, 0.3);
+        const headboard = new THREE.Mesh(headboardGeometry, woodMaterial);
+        headboard.position.set(0, 2, -2.75);
+        headboard.castShadow = true;
+        bedGroup.add(headboard);
+
+        return bedGroup;
+    }
+
+    /**
+     * Create a nightstand mesh
+     */
+    createNightstand(woodMaterial) {
+        const nightstandGroup = new THREE.Group();
+
+        // Main body
+        const bodyGeometry = new THREE.BoxGeometry(1.2, 1.5, 1);
+        const body = new THREE.Mesh(bodyGeometry, woodMaterial);
+        body.position.y = 0.75;
+        body.castShadow = true;
+        body.receiveShadow = true;
+        nightstandGroup.add(body);
+
+        // Drawer
+        const drawerGeometry = new THREE.BoxGeometry(1, 0.4, 0.05);
+        const drawer = new THREE.Mesh(drawerGeometry, woodMaterial);
+        drawer.position.set(0, 0.75, 0.525);
+        nightstandGroup.add(drawer);
+
+        // Drawer handle
+        const handleMaterial = new THREE.MeshStandardMaterial({
+            color: 0x888888,
+            metalness: 0.8,
+            roughness: 0.2
+        });
+        const handleGeometry = new THREE.SphereGeometry(0.05);
+        const handle = new THREE.Mesh(handleGeometry, handleMaterial);
+        handle.position.set(0, 0.75, 0.58);
+        nightstandGroup.add(handle);
+
+        return nightstandGroup;
+    }
+
+    /**
+     * Create a TV stand mesh
+     */
+    createTVStand(woodMaterial) {
+        const tvStandGroup = new THREE.Group();
+
+        // Main cabinet
+        const cabinetGeometry = new THREE.BoxGeometry(4, 1, 1.5);
+        const cabinet = new THREE.Mesh(cabinetGeometry, woodMaterial);
+        cabinet.position.y = 0.5;
+        cabinet.castShadow = true;
+        cabinet.receiveShadow = true;
+        tvStandGroup.add(cabinet);
+
+        // TV screen (simple rectangle)
+        const tvGeometry = new THREE.BoxGeometry(3, 2, 0.1);
+        const tvMaterial = new THREE.MeshStandardMaterial({
+            color: 0x111111,
+            roughness: 0.3,
+            metalness: 0.5,
+            emissive: 0x002244,
+            emissiveIntensity: 0.1
+        });
+        const tv = new THREE.Mesh(tvGeometry, tvMaterial);
+        tv.position.set(0, 2, 0);
+        tv.castShadow = true;
+        tvStandGroup.add(tv);
+
+        return tvStandGroup;
+    }
+
+    /**
+     * Create a plant mesh
+     */
+    createPlant() {
+        const plantGroup = new THREE.Group();
+
+        // Pot
+        const potGeometry = new THREE.CylinderGeometry(0.3, 0.25, 0.5);
+        const potMaterial = new THREE.MeshStandardMaterial({
+            color: 0x8b4513,
+            roughness: 0.9,
+            metalness: 0.0
+        });
+        const pot = new THREE.Mesh(potGeometry, potMaterial);
+        pot.position.y = 0.25;
+        pot.castShadow = true;
+        plantGroup.add(pot);
+
+        // Plant leaves (simplified as spheres)
+        const leafMaterial = new THREE.MeshStandardMaterial({
+            color: 0x228b22,
+            roughness: 0.9,
+            metalness: 0.0
+        });
+
+        for (let i = 0; i < 5; i++) {
+            const leafGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+            const leaf = new THREE.Mesh(leafGeometry, leafMaterial);
+            const angle = (i / 5) * Math.PI * 2;
+            leaf.position.set(
+                Math.cos(angle) * 0.25,
+                0.6 + Math.random() * 0.3,
+                Math.sin(angle) * 0.25
+            );
+            plantGroup.add(leaf);
+        }
+
+        return plantGroup;
+    }
+
+    /**
+     * Create an ottoman mesh
+     */
+    createOttoman(fabricMaterial) {
+        const ottomanGroup = new THREE.Group();
+
+        // Cushion
+        const cushionGeometry = new THREE.BoxGeometry(1.5, 0.5, 1.5);
+        const cushion = new THREE.Mesh(cushionGeometry, fabricMaterial);
+        cushion.position.y = 0.5;
+        cushion.castShadow = true;
+        cushion.receiveShadow = true;
+        ottomanGroup.add(cushion);
+
+        // Small legs
+        const legGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.3);
+        const legMaterial = new THREE.MeshStandardMaterial({
+            color: 0x5a3a1a,
+            roughness: 0.8,
+            metalness: 0.1
+        });
+
+        const legPositions = [
+            [-0.6, 0.15, 0.6],
+            [0.6, 0.15, 0.6],
+            [-0.6, 0.15, -0.6],
+            [0.6, 0.15, -0.6]
+        ];
+
+        legPositions.forEach(pos => {
+            const leg = new THREE.Mesh(legGeometry, legMaterial);
+            leg.position.set(...pos);
+            leg.castShadow = true;
+            ottomanGroup.add(leg);
+        });
+
+        return ottomanGroup;
     }
 
     /**

@@ -327,14 +327,14 @@ export class GestureController {
             const tipDistance = this.distance3D(tip, wrist);
             const knuckleDistance = this.distance3D(knuckle, wrist);
 
-            // Finger is curled if tip is closer to wrist than knuckle (or similar distance)
-            if (tipDistance <= knuckleDistance * 1.15) {
+            // Finger is curled if tip is closer to wrist than knuckle (more lenient threshold)
+            if (tipDistance <= knuckleDistance * 1.25) {
                 curledCount++;
             }
         }
 
-        // Hand is closed if all 4 fingers are curled
-        return curledCount >= 4;
+        // Hand is closed if at least 3 out of 4 fingers are curled (more lenient)
+        return curledCount >= 3;
     }
 
     /**
