@@ -56,7 +56,7 @@ export class CameraController {
      */
     rotateLeft(intensity = 1.0) {
         this.targetRotation = this.rotateSpeed * intensity;
-        this.rotationVelocity += this.targetRotation * 0.12; // Smooth, gentle rotation
+        this.rotationVelocity += this.targetRotation * 0.06; // Very slow, dreamlike rotation
     }
 
     /**
@@ -65,7 +65,7 @@ export class CameraController {
      */
     rotateRight(intensity = 1.0) {
         this.targetRotation = -this.rotateSpeed * intensity;
-        this.rotationVelocity += this.targetRotation * 0.12; // Smooth, gentle rotation
+        this.rotationVelocity += this.targetRotation * 0.06; // Very slow, dreamlike rotation
     }
 
     /**

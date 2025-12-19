@@ -409,8 +409,12 @@ export class Environment {
             metalness: 0.0
         });
 
+        // Furniture scale multiplier (2x larger)
+        const furnitureScale = 2.0;
+
         // Create Couch
         const couch = this.createCouch(woodMaterial, fabricMaterial);
+        couch.scale.setScalar(furnitureScale);
         couch.position.set(-15, 0, -15);
         couch.rotation.y = Math.PI / 4;
         this.scene.add(couch);
@@ -418,6 +422,7 @@ export class Environment {
 
         // Create Desk
         const desk = this.createDesk(woodMaterial);
+        desk.scale.setScalar(furnitureScale);
         desk.position.set(15, 0, -10);
         desk.rotation.y = -Math.PI / 6;
         this.scene.add(desk);
@@ -425,6 +430,7 @@ export class Environment {
 
         // Create Drawer/Dresser
         const drawer = this.createDrawer(woodMaterial);
+        drawer.scale.setScalar(furnitureScale);
         drawer.position.set(-12, 0, 15);
         drawer.rotation.y = Math.PI / 3;
         this.scene.add(drawer);
@@ -432,6 +438,7 @@ export class Environment {
 
         // Create Bookshelf
         const bookshelf = this.createBookshelf(woodMaterial);
+        bookshelf.scale.setScalar(furnitureScale);
         bookshelf.position.set(18, 0, 12);
         bookshelf.rotation.y = -Math.PI / 2;
         this.scene.add(bookshelf);
@@ -439,12 +446,14 @@ export class Environment {
 
         // Create Coffee Table
         const coffeeTable = this.createCoffeeTable(woodMaterial);
+        coffeeTable.scale.setScalar(furnitureScale);
         coffeeTable.position.set(-10, 0, -10);
         this.scene.add(coffeeTable);
         this.furniture.push(coffeeTable);
 
         // Create Armchair
         const armchair = this.createArmchair(woodMaterial, fabricMaterial);
+        armchair.scale.setScalar(furnitureScale);
         armchair.position.set(10, 0, 8);
         armchair.rotation.y = Math.PI / 4;
         this.scene.add(armchair);
@@ -452,18 +461,21 @@ export class Environment {
 
         // Create Floor Lamp
         const lamp = this.createFloorLamp(woodMaterial);
+        lamp.scale.setScalar(furnitureScale);
         lamp.position.set(-18, 0, -5);
         this.scene.add(lamp);
         this.furniture.push(lamp);
 
         // Create Side Table
         const sideTable = this.createSideTable(woodMaterial);
+        sideTable.scale.setScalar(furnitureScale);
         sideTable.position.set(5, 0, -15);
         this.scene.add(sideTable);
         this.furniture.push(sideTable);
 
         // Create Rug
         const rug = this.createRug();
+        rug.scale.setScalar(furnitureScale);
         rug.position.set(0, 0.05, 0);
         this.scene.add(rug);
         this.furniture.push(rug);

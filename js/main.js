@@ -314,11 +314,6 @@ class UnderwaterExploration {
                 // Both palms shown - attempt to open treasure chest
                 this.attemptChestInteraction();
                 break;
-            case 'palm_to_fist_left':
-            case 'palm_to_fist_right':
-                // Palm → fist transition triggers forward movement
-                this.cameraController.moveForward();
-                break;
         }
     }
 
@@ -416,6 +411,12 @@ class UnderwaterExploration {
             if (gestures.rightHand?.type === 'palm_right') {
                 // Right palm → rotate left (camera turns to face left)
                 this.cameraController.rotateLeft(1.0);
+            }
+
+            // Continuous forward movement based on fist gestures
+            if (gestures.leftHand?.type === 'fist_left' || gestures.rightHand?.type === 'fist_right') {
+                // Either hand showing fist → move forward
+                this.cameraController.moveForward();
             }
         }
 
